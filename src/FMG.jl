@@ -25,7 +25,7 @@ function FMG_solve(grids, tol)
 	FMG!(grids,1)
 	residu = norm(grids[1].f-grids[1].A*grids[1].v)
 	while residu > tol
-		W_cycle!(grids,2)
+		V_cycle!(grids,2,1)
 		residu = norm(grids[1].f-grids[1].A*grids[1].v)
 	end
 end
