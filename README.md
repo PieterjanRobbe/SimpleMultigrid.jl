@@ -12,7 +12,7 @@ Pkg.clone("https://github.com/PieterjanRobbe/SimpleMultigrid.jl")
 Load the package in Julia by
 
 ```julia
-using SimpleMultigrid.jl
+using SimpleMultigrid
 ```
 
 ## Details
