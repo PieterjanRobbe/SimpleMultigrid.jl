@@ -11,7 +11,7 @@ ngrids = 10
 grids = Grid[]
 for i = ngrids:-1:1
 	m = 2^i
-	grid = Grid(poisson1d(m),ones(m-1),zeros(m-1),(1/m:1/m:1-1/m,))
+	grid = Grid(poisson1d(m),ones(m-1),zeros(m-1),[1/m:1/m:1-1/m])
 	push!(grids,grid)
 end
 
@@ -59,12 +59,12 @@ ngrids = 5
 grids = Grid[]
 for i = ngrids:-1:1
 	m = 2^i
-	grid = Grid(poisson2d(m,m),ones((m-1)*(m-1)),zeros((m-1)*(m-1)),(1/m:1/m:1-1/m,1/m:1/m:1-1/m))
+	grid = Grid(poisson2d(m,m),ones((m-1)*(m-1)),zeros((m-1)*(m-1)),[1/m:1/m:1-1/m,1/m:1/m:1-1/m])
 	push!(grids,grid)
 end
 
 # "exact" discrete solution
-exact = reshape(grids[1].A\grids[1].f,length.(grids[1].x))
+exact = reshape(grids[1].A\grids[1].f,Tuple(length.(grids[1].x)))
 Q_exact = exact[2^(ngrids-1),2^(ngrids-1)]
 
 # repeat V-cycles
@@ -76,7 +76,7 @@ for i = 1:ncycles
 	residu[i] = discr_norm(grids[1].f-grids[1].A*grids[1].v,grids[1].x[1][1],2)
 	error[i] = discr_norm(exact[:]-grids[1].v,grids[1].x[1][1],2)
 end
-u_hat = reshape(grids[1].v,length.(grids[1].x))
+u_hat = reshape(grids[1].v,Tuple(length.(grids[1].x)))
 Q_hat = u_hat[2^(ngrids-1),2^(ngrids-1)]
 
 # compute ratios

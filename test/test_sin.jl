@@ -12,7 +12,7 @@ grids = Grid[]
 for i = ngrids:-1:1
 	m = 2^i
 	x = 1/2/m:1/m:1-1/2/m
-	grid = Grid(elliptic1d(1+1/10*sin.(5π*x)),ones(m-1),zeros(m-1),(1/m:1/m:1-1/m,))
+	grid = Grid(elliptic1d(1+1/10*sin.(5π*x)),ones(m-1),zeros(m-1),[1/m:1/m:1-1/m])
 	push!(grids,grid)
 end
 
@@ -60,7 +60,7 @@ grids = Grid[]
 for i = ngrids:-1:1
 	m = 2^i
 	x = 1/2/m:1/m:1-1/2/m
-	grid = Grid(elliptic1d(1+1/10*sin.(5π*x)),ones(m-1),zeros(m-1),(1/m:1/m:1-1/m,))
+	grid = Grid(elliptic1d(1+1/10*sin.(5π*x)),ones(m-1),zeros(m-1),[1/m:1/m:1-1/m])
 	push!(grids,grid)
 end
 
@@ -88,12 +88,12 @@ for i = ngrids:-1:1
 	ky = 1+sin.(5π*(1/m:1/m:1-1/m))*sin.(5π*(1/2/n:1/n:1-1/2/n))'
 	A = elliptic2d(kx,ky)
 	f = ones((n-1)*(m-1))
-	grid = Grid(A,f,zeros((m-1)*(n-1)),(1/m:1/m:1-1/m,1/n:1/n:1-1/n))
+	grid = Grid(A,f,zeros((m-1)*(n-1)),[1/m:1/m:1-1/m,1/n:1/n:1-1/m])
 	push!(grids,grid)
 end
 
 # "exact" discrete solution
-exact = reshape(grids[1].A\grids[1].f,length.(grids[1].x))
+exact = reshape(grids[1].A\grids[1].f,Tuple(length.(grids[1].x)))
 Q_exact = exact[2^(ngrids-1),2^(ngrids-1)]
 
 # repeat V-cycles
@@ -105,7 +105,7 @@ for i = 1:ncycles
 	residu[i] = discr_norm(grids[1].f-grids[1].A*grids[1].v,grids[1].x[1][1],2)
 	error[i] = discr_norm(exact[:]-grids[1].v,grids[1].x[1][1],2)
 end
-u_hat = reshape(grids[1].v,length.(grids[1].x))
+u_hat = reshape(grids[1].v,Tuple(length.(grids[1].x)))
 Q_hat = u_hat[2^(ngrids-1),2^(ngrids-1)]
 
 # compute ratios
@@ -141,7 +141,7 @@ for i = ngrids:-1:1
 	ky = 1+sin.(5π*(1/m:1/m:1-1/m))*sin.(5π*(1/2/n:1/n:1-1/2/n))'
 	A = elliptic2d(kx,ky)
 	f = ones((n-1)*(m-1))
-	grid = Grid(A,f,zeros((m-1)*(n-1)),(1/m:1/m:1-1/m,1/n:1/n:1-1/n))
+	grid = Grid(A,f,zeros((m-1)*(n-1)),[1/m:1/m:1-1/m,1/n:1/n:1-1/n])
 	push!(grids,grid)
 end
 
@@ -149,7 +149,7 @@ end
 FMG!(grids,2)
 
 # extract solution
-u_hat = reshape(grids[1].v,length.(grids[1].x))
+u_hat = reshape(grids[1].v,Tuple(length.(grids[1].x)))
 Q_hat = u_hat[2^(ngrids-1),2^(ngrids-1)]
 
 # test value at mid point

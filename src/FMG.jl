@@ -19,7 +19,7 @@ end
 """
     FMG_solve(grids, tol)
 
-	Solve the grid hierarchy in grids using repeated full multigrid cycles until the norm of the residu is smaller then tol
+	Solve the grid hierarchy in grids using full multigrid and repeated V-cycles until the norm of the residu is smaller then tol
 """
 function FMG_solve(grids, tol)
 	FMG!(grids,1)
@@ -29,3 +29,4 @@ function FMG_solve(grids, tol)
 		residu = norm(grids[1].f-grids[1].A*grids[1].v)
 	end
 end
+

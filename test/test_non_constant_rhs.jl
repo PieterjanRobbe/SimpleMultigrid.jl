@@ -17,7 +17,7 @@ for i = ell:-1:1
 	x = 1/m:1/m:1-1/m
 	y = x'
 	f = @. 2((1-6x^2)*y^2*(1-y^2)+(1-6y^2)*x^2*(1-x^2))
-	grid = Grid(poisson2d(m,m),f[:],zeros((m-1)*(m-1)),(1/m:1/m:1-1/m,1/m:1/m:1-1/m))
+	grid = Grid(poisson2d(m,m),f[:],zeros((m-1)*(m-1)),[1/m:1/m:1-1/m,1/m:1/m:1-1/m])
 	push!(grids,grid)
 end
 
@@ -53,7 +53,7 @@ verbose && begin println("V-cycle   |r|_h      ratio    |e|_h      ratio")
 end
 
 # extract solution computed by V-cycles
-u_v_cycles = reshape(grids[1].v,length.(grids[1].x))
+u_v_cycles = reshape(grids[1].v,Tuple(length.(grids[1].x)))
 
 # test norm of residu
 @test residu[end] < sqrt(eps())
@@ -68,7 +68,7 @@ for i = ell:-1:1
 	x = 1/m:1/m:1-1/m
 	y = x'
 	f = @. 2((1-6x^2)*y^2*(1-y^2)+(1-6y^2)*x^2*(1-x^2))
-	grid = Grid(poisson2d(m,m),f[:],zeros((m-1)*(m-1)),(1/m:1/m:1-1/m,1/m:1/m:1-1/m))
+	grid = Grid(poisson2d(m,m),f[:],zeros((m-1)*(m-1)),[1/m:1/m:1-1/m,1/m:1/m:1-1/m])
 	push!(grids,grid)
 end
 
@@ -76,7 +76,7 @@ end
 FMG!(grids,1)
 
 # extract solution computed by FMG
-u_fmg = reshape(grids[1].v,length.(grids[1].x))
+u_fmg = reshape(grids[1].v,Tuple(length.(grids[1].x)))
 
 # compare solution of FMG to exact and V-cycle solution
 verbose && println(@sprintf("difference with exact solution is %3.2e",discr_norm(u_fmg-exact,grids[1].x[1][1],2)))

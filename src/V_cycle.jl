@@ -14,6 +14,8 @@ function V_cycle!(grids::Array{Grid}, nu1::Integer, nu2::Integer)
 		grids[1].v = grids[1].A\grids[1].f
 	end
 	relax(grids[1],nu2)
+
+	return Void
 end
 
 function W_cycle!(grids::Array{Grid}, mu::Integer; nu1::Integer=2, nu2::Integer=1)

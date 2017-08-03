@@ -35,3 +35,13 @@ function elliptic2d(kx,ky)
 	C1 = spdiagm((c,c),(m-1,-(m-1)))	
 	return isempty(C1) ? B1+B2 : B1+B2+C1
 end
+
+"""
+    elliptic2d(k)
+
+	Generate system matrix for general 2d elliptic PDE on an m-by-n grid where k is the value of the diffusion coefficient at the mid points of the grid.
+
+	k is an m-by-n array that contains the k values (of which only half will be used)
+"""
+elliptic2d(k) = elliptic2d(k[1:2:end,2:2:end-1],k[2:2:end-1,1:2:end])
+

@@ -5,10 +5,10 @@
 # such as interpolate, restrict
 
 mutable struct Grid
-	A # system matrix
-	f # right-hand side
-	v # current approximation
-	x # points where the solution is defined
+	A::SparseMatrixCSC{Float64,Int64} # system matrix
+	f::Vector{Float64} # right-hand side
+	v::Vector{Float64} # current approximation
+	x::Vector{StepRangeLen{Float64,Base.TwicePrecision{Float64},Base.TwicePrecision{Float64}}} # points where the solution is defined
 end
 
 """

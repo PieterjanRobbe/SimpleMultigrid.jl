@@ -11,7 +11,7 @@ ngrids = 10
 grids = Grid[]
 for i = ngrids:-1:1
 	m = 2^i
-	grid = Grid(poisson1d(m),ones(m-1),zeros(m-1),(1/m:1/m:1-1/m,))
+	grid = Grid(poisson1d(m),ones(m-1),zeros(m-1),[1/m:1/m:1-1/m])
 	push!(grids,grid)
 end
 
@@ -33,7 +33,7 @@ ngrids = 5
 grids = Grid[]
 for i = ngrids:-1:2
 	m = 2^i
-	grid = Grid(poisson2d(m,m),ones((m-1)*(m-1)),zeros((m-1)*(m-1)),(1/m:1/m:1-1/m,1/m:1/m:1-1/m))
+	grid = Grid(poisson2d(m,m),ones((m-1)*(m-1)),zeros((m-1)*(m-1)),[1/m:1/m:1-1/m,1/m:1/m:1-1/m])
 	push!(grids,grid)
 end
 
@@ -41,11 +41,11 @@ end
 FMG!(grids,1)
 
 # extract solution
-u_hat = reshape(grids[1].v,length.(grids[1].x))
+u_hat = reshape(grids[1].v,Tuple(length.(grids[1].x)))
 Q_hat = u_hat[2^(ngrids-1),2^(ngrids-1)]
 
 # "exact" discrete solution
-u_discr = reshape(grids[1].A\grids[1].f,length.(grids[1].x))
+u_discr = reshape(grids[1].A\grids[1].f,Tuple(length.(grids[1].x)))
 Q_discr = u_discr[2^(ngrids-1),2^(ngrids-1)]
 
 # test value at mid point
