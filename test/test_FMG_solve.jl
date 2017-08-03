@@ -59,8 +59,8 @@ verbose && println("## timing test")
 function make_grids(ngrids)
 	grids = Grid[]
 	for i = ngrids:-1:1
-		n = 2^i
-		m = 2^i
+		n = 2^(i)
+		m = 2^(i)
 		kx = 1+sin.(5π*(1/2/m:1/m:1-1/2/m))*sin.(5π*(1/n:1/n:1-1/n))'
 		ky = 1+sin.(5π*(1/m:1/m:1-1/m))*sin.(5π*(1/2/n:1/n:1-1/2/n))'
 		A = elliptic2d(kx,ky)
@@ -78,12 +78,14 @@ end
 
 function time_FMG(ngrids)
 	grids = make_grids(ngrids)
-	return @elapsed FMG_solve(grids,1e-8)
+	return @elapsed FMG_solve(grids,1e-3)
 end
 
-time_direct(5)
-t_direct = time_direct(5)
+relax(grid,nsweeps) = jacobi(grid,nsweeps)
+
+time_direct(3)
+t_direct = time_direct(8)
 verbose && println("direct solve takes $(t_direct) s")
-time_FMG(5)
-t_FMG = time_FMG(5)
+time_FMG(3)
+t_FMG = time_FMG(8)
 verbose && println("FMG solve takes $(t_FMG) s")

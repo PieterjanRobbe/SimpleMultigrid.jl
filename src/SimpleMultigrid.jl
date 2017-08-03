@@ -3,6 +3,7 @@ module SimpleMultigrid
 # dependencies
 using Interpolations
 using IterativeSolvers
+using KrylovMethods
 
 # export statements
 export discr_norm # from utils.jl
