@@ -11,7 +11,7 @@ gauss_seidel(grid::Grid,nsweeps) = gauss_seidel!(grid.v, grid.A, grid.f, maxiter
 # from KrylovMethods
 # has better sparse porperties for stationary smoothers
 function ssor(grid::Grid,nsweeps)
-	grid.v,flag,err,iter,resvec = KrylovMethods.ssor(grid.A, grid.f, x=grid.v, maxIter=nsweeps, out=-1)
+	grid.v,flag,err,iter,resvec = KrylovMethods.ssor(grid.A, grid.f, x=grid.v, maxIter=nsweeps, out=-1, omega=2/3)
 end
 
 # defaults to gauss-seidel
