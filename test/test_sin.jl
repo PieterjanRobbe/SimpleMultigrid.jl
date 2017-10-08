@@ -1,7 +1,4 @@
-#
-# TEST_SIN.JL
-#
-# Test multigrid for general elliptic PDEs.
+## test_sin.jl : test multigrid for general elliptic PDEs
 
 ## 1D
 verbose && println("## testing V-cyle, 1D elliptic problem")

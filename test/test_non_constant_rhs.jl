@@ -1,7 +1,4 @@
-#
-# TEST_NON_CONSTANT_RHS.JL
-#
-# Test example from "A Multigrid Tutorial", page 64.
+## test_non_constant_rhs.jl : test example from "A Multigrid Tutorial", page 64
 
 ## V-CYCLES
 verbose && println("## testing non_constant_rhs, V-cycles")

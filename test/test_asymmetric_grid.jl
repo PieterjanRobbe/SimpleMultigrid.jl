@@ -1,7 +1,4 @@
-#
-# TEST_ASYMMETRIC_GRID.JL
-#
-# Test implementation for domains of n-by-m points, with m != n
+## test_asymmetric_grid.jl : test implementation for domains of n-by-m points, with m != n
 
 ## POISSON PROBLEM
 verbose && println("## testing asymmetric grid, 2D poisson problem")

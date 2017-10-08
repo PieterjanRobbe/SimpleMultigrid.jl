@@ -1,7 +1,4 @@
-#
-# TEST_W_CYCLE.JL
-#
-# Test W-cycle implementation for simple poisson problem.
+## test_W_cycle.jl : test W-cycle implementation for simple poisson problem.
 
 ## 1D POISSON PROBLEM
 verbose && println("## testing W-cyle, 1D poisson problem")

@@ -1,7 +1,4 @@
-#
-# TEST_ELLIPTIC.JL
-#
-# Test finite difference discretization of the general elliptic PDE in 1D and 2D
+## test_elliptic.jl : test finite difference discretization of the general elliptic PDE in 1D and 2D
 
 ## 1D
 

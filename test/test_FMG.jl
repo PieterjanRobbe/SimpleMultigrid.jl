@@ -1,7 +1,4 @@
-#
-# TEST_FMG.JL
-#
-# Test FMG implementation for simple poisson problem.
+## test_FMG.jl : test FMG implementation for simple poisson problem.
 
 ## 1D POISSON PROBLEM
 verbose && println("## testing FMG, 1D poisson problem")
@@ -10,9 +7,9 @@ verbose && println("## testing FMG, 1D poisson problem")
 ngrids = 10
 grids = Grid[]
 for i = ngrids:-1:1
-	m = 2^i
-	grid = Grid(poisson1d(m),ones(m-1),zeros(m-1),[1/m:1/m:1-1/m])
-	push!(grids,grid)
+    m = 2^i
+    grid = Grid(poisson1d(m),ones(m-1),zeros(m-1),[1/m:1/m:1-1/m])
+    push!(grids,grid)
 end
 
 # FMG
@@ -32,9 +29,9 @@ verbose && println("## testing FMG, 2D poisson problem")
 ngrids = 5
 grids = Grid[]
 for i = ngrids:-1:2
-	m = 2^i
-	grid = Grid(poisson2d(m,m),ones((m-1)*(m-1)),zeros((m-1)*(m-1)),[1/m:1/m:1-1/m,1/m:1/m:1-1/m])
-	push!(grids,grid)
+    m = 2^i
+    grid = Grid(poisson2d(m,m),ones((m-1)*(m-1)),zeros((m-1)*(m-1)),[1/m:1/m:1-1/m,1/m:1/m:1-1/m])
+    push!(grids,grid)
 end
 
 # FMG

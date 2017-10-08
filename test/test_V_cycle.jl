@@ -1,7 +1,4 @@
-#
-# TEST_V_CYCLE.JL
-#
-# Test V-cycle implementation for simple poisson problem.
+## test_V_cycle.jl : test V-cycle implementation for simple poisson problem
 
 ## 1D POISSON PROBLEM
 verbose && println("## testing V-cyle, 1D poisson problem")

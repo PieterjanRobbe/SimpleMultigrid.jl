@@ -1,7 +1,4 @@
-#
-# TEST_FMG_SOLVE.JL
-#
-# Test FMG for general elliptic PDEs
+## test_FMG_solve.jl : test FMG for general elliptic PDEs
 
 ## 1D
 verbose && println("## testing FMG solver for 1D poisson problem")
@@ -10,9 +7,9 @@ verbose && println("## testing FMG solver for 1D poisson problem")
 ngrids = 10
 grids = Grid[]
 for i = ngrids:-1:1
-	m = 2^i
-	grid = Grid(poisson1d(m),ones(m-1),zeros(m-1),[1/m:1/m:1-1/m])
-	push!(grids,grid)
+    m = 2^i
+    grid = Grid(poisson1d(m),ones(m-1),zeros(m-1),[1/m:1/m:1-1/m])
+    push!(grids,grid)
 end
 
 # FMG solve
@@ -29,14 +26,14 @@ verbose && println("## testing FMG solver for 2D elliptic problem")
 ngrids = 5
 grids = Grid[]
 for i = ngrids:-1:1
-	n = 2^i
-	m = 2^i
-	kx = 1+sin.(5π*(1/2/m:1/m:1-1/2/m))*sin.(5π*(1/n:1/n:1-1/n))'
-	ky = 1+sin.(5π*(1/m:1/m:1-1/m))*sin.(5π*(1/2/n:1/n:1-1/2/n))'
-	A = elliptic2d(kx,ky)
-	f = ones((n-1)*(m-1))
-	grid = Grid(A,f,zeros((m-1)*(n-1)),[1/m:1/m:1-1/m,1/n:1/n:1-1/n])
-	push!(grids,grid)
+    n = 2^i
+    m = 2^i
+    kx = 1+sin.(5π*(1/2/m:1/m:1-1/2/m))*sin.(5π*(1/n:1/n:1-1/n))'
+    ky = 1+sin.(5π*(1/m:1/m:1-1/m))*sin.(5π*(1/2/n:1/n:1-1/2/n))'
+    A = elliptic2d(kx,ky)
+    f = ones((n-1)*(m-1))
+    grid = Grid(A,f,zeros((m-1)*(n-1)),[1/m:1/m:1-1/m,1/n:1/n:1-1/n])
+    push!(grids,grid)
 end
 
 # "exact" discrete solution
@@ -57,28 +54,28 @@ verbose && println(@sprintf("comparing exact value %0.6f with computed value %0.
 verbose && println("## timing test")
 
 function make_grids(ngrids)
-	grids = Grid[]
-	for i = ngrids:-1:1
-		n = 2^(i)
-		m = 2^(i)
-		kx = 1+sin.(5π*(1/2/m:1/m:1-1/2/m))*sin.(5π*(1/n:1/n:1-1/n))'
-		ky = 1+sin.(5π*(1/m:1/m:1-1/m))*sin.(5π*(1/2/n:1/n:1-1/2/n))'
-		A = elliptic2d(kx,ky)
-		f = ones((n-1)*(m-1))
-		grid = Grid(A,f,zeros((m-1)*(n-1)),[1/m:1/m:1-1/m,1/n:1/n:1-1/n])
-		push!(grids,grid)
-	end
-	return grids
+    grids = Grid[]
+    for i = ngrids:-1:1
+        n = 2^(i)
+        m = 2^(i)
+        kx = 1+sin.(5π*(1/2/m:1/m:1-1/2/m))*sin.(5π*(1/n:1/n:1-1/n))'
+        ky = 1+sin.(5π*(1/m:1/m:1-1/m))*sin.(5π*(1/2/n:1/n:1-1/2/n))'
+        A = elliptic2d(kx,ky)
+        f = ones((n-1)*(m-1))
+        grid = Grid(A,f,zeros((m-1)*(n-1)),[1/m:1/m:1-1/m,1/n:1/n:1-1/n])
+        push!(grids,grid)
+    end
+    return grids
 end
 
 function time_direct(ngrids)
-	grids = make_grids(ngrids)
-	return @elapsed grids[1].A\grids[1].f
+    grids = make_grids(ngrids)
+    return @elapsed grids[1].A\grids[1].f
 end
 
 function time_FMG(ngrids)
-	grids = make_grids(ngrids)
-	return @elapsed FMG_solve(grids,1e-3)
+    grids = make_grids(ngrids)
+    return @elapsed FMG_solve(grids,1e-3)
 end
 
 relax(grid,nsweeps) = jacobi(grid,nsweeps)
