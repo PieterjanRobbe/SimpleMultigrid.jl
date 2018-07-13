@@ -41,4 +41,3 @@ Generate system matrix for general 2d elliptic PDE on an m-by-n grid where k is 
 k is an m-by-n array that contains the k values (of which only half will be used)
 """
 elliptic2d(k) = elliptic2d(k[1:2:end,2:2:end-1],k[2:2:end-1,1:2:end])
-
