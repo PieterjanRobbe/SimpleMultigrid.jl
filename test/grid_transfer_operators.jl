@@ -42,10 +42,10 @@ stencil(op::GridTransferOperator{2,FullWeighting,Interpolation}) = 1/4*[1 2 1; 2
 stencil(op::GridTransferOperator{2,HalfWeighting,Restriction}) = 1/8*[0 1 0; 1 4 1; 0 1 0] 
 
 # restriction
-restrict(u::Array{T,d} where {T<:AbstractFloat},op::TransferKind) where {d} = expand(GridTransferOperator(d,op,Restriction()),size(u).+1...)*u[:]
+restrict(u::Vector{T},op::TransferKind,n::N...) where {T<:AbstractFloat,N<:Integer} = expand(GridTransferOperator(length(n),op,Restriction()),n...)*u
 
 # interpolation
-interpolate(u::Array{T,d} where {T<:AbstractFloat},op::TransferKind) where {d} = expand(GridTransferOperator(d,op,Interpolation()),2.*(size(u).+1)...)*u[:]
+interpolate(u::Vector{T},op::TransferKind,n::N...) where {T<:AbstractFloat,N<:Integer} = expand(GridTransferOperator(length(n),op,Interpolation()),2.*n...)*u
 
 # prolongation = interpolation
 prolongate(u,op) = interpolate(u,op)
