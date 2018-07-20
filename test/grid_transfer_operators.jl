@@ -67,7 +67,7 @@ sparse_matrix_from_op(op::GridTransferOperator{d,K,Restriction} where {d,K},Is,J
 
 function expand(op::GridTransferOperator{2,K,O} where {K,O},n,m)
     Is = Int64[]; Js = Int64[]; Vs = Float64[]
-    for (idx,(j,i)) in enumerate(Base.Iterators.product(2:2:m-1,2:2:n-1))
+    for (idx,(i,j)) in enumerate(Base.Iterators.product(2:2:n-1,2:2:m-1))
         (is,js,vs) = stencil2mat(stencil(op),n,m,i,j)
         push!(Is,idx*ones(length(is))...)
         push!(Js,js...)
