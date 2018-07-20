@@ -57,7 +57,7 @@ mplot(ix2,ix1,x)
 f(x,y) = 1+sin.(π*x)*sin.(π*y)'
 g(n,m) = f(linspace(0,1,n+1),linspace(0,1,m+1))
 n = 16
-m = 16
+m = 64
 L = elliptic2d(g(n,m))
 b = ones((n-1)*(m-1))
 x = L\b
