@@ -1,12 +1,12 @@
 ## compose_matrix.jl : methods to compose example matrices
 
 """
-laplace1d(n)
+    laplace1d(n)
 
 1d Laplacian on [0,1] using n points
 """
 function laplace1d(n)
-    stencil = n^2*[-1,2,-1]
+    stencil = @SVector [-n^2,2n^2,-n^2]
     Is = Int64[]
     Js = Int64[]
     Vs = Float64[]
@@ -20,12 +20,12 @@ function laplace1d(n)
 end
 
 """
-laplace2d(n,m)
+    laplace2d(n,m)
 
 2d Laplacian on [0,1]^2 using n x m points 
 """
 function laplace2d(n,m)
-    stencil = [0 -m^2 0; -n^2 2n^2+2m^2 -n^2; 0 -m^2 0]
+    stencil = @SMatrix [0 -m^2 0; -n^2 2n^2+2m^2 -n^2; 0 -m^2 0]
     Is = Int64[]
     Js = Int64[]
     Vs = Float64[]
@@ -39,7 +39,7 @@ function laplace2d(n,m)
 end
 
 """
-elliptic1d(k)
+    elliptic1d(k)
 
 Generate system matrix for general 1d elliptic PDE defined on [0,1].
 The diffusion coefficient k must given on an equidistant grid with nodes {0,1,...,n}, 
@@ -51,7 +51,7 @@ function elliptic1d(k)
     Js = Int64[]
     Vs = Float64[]
     for i = 1:n-1
-        stencil = n^2*[-k[i],2*k[i+1],-k[i+2]]
+        stencil = @SVector [-k[i]*n^2,2*k[i+1]*n^2,-k[i+2]*n^2]
         (is,js,vs) = stencil2mat(stencil,n,i)
         push!(Is,is...)
         push!(Js,js...)
@@ -61,7 +61,7 @@ function elliptic1d(k)
 end
 
 """
-elliptic2d(k)
+    elliptic2d(k)
 
 Generate system matrix for general 2d elliptic PDE defined on [0,1]^2.
 The diffusion coefficient k must given on an equidistant grid with nodes {0,1,...,n}x{0,1,..,m}, 
@@ -73,7 +73,7 @@ function elliptic2d(k)
     Js = Int64[]
     Vs = Float64[]
     for i in 1:n-1, j in 1:m-1
-        stencil = [0 -m^2*k[i+1,j+2] 0; -n^2*k[i,j+1] n^2*(k[i,j+1]+k[i+2,j+1])+m^2*(k[i+1,j+2]+k[i+1,j]) -n^2*k[i+2,j+1]; 0 -m^2*k[i+1,j] 0]
+        stencil = @SMatrix [0 -m^2*k[i+1,j+2] 0; -n^2*k[i,j+1] n^2*(k[i,j+1]+k[i+2,j+1])+m^2*(k[i+1,j+2]+k[i+1,j]) -n^2*k[i+2,j+1]; 0 -m^2*k[i+1,j] 0]
         (is,js,vs) = stencil2mat(stencil,n,m,i,j)
         push!(Is,is...)
         push!(Js,js...)
@@ -82,11 +82,20 @@ function elliptic2d(k)
     return sparse(Is,Js,Vs)
 end
 
-# convert stencil to sparse matrix - 1d
-function stencil2mat(stencil::AbstractArray{T,1},n::N,i::N) where {T<:Number,N<:Integer}
-    ( length(stencil) == 3 ) || throw(ArgumentError("only stencils of length 3 are supported"))
+# convert stencil to sparse matrix - 1d - length 3
+function stencil2mat(stencil::SVector{3},n::Int,i::Int)
     els = [i-1,i,i+1]
-    idcs = lexicographic_idcs(i,n)
+    idcs = lexicographic_idcs_3(i,n)
+    is = [i for k in 1:length(idcs)]
+    js = els[idcs]
+    vs = stencil[idcs]
+    return (is,js,vs)
+end
+
+# convert stencil to sparse matrix - 1d - length 7
+function stencil2mat(stencil::SVector{7},n::Int,i::Int)
+    els = [i-3,i-2,i-1,i,i+1,i+2,i+3]
+    idcs = lexicographic_idcs_7(i,n)
     is = [i for k in 1:length(idcs)]
     js = els[idcs]
     vs = stencil[idcs]
@@ -94,11 +103,10 @@ function stencil2mat(stencil::AbstractArray{T,1},n::N,i::N) where {T<:Number,N<:
 end
 
 # convert stencil to sparse matrix - 2d
-function stencil2mat(stencil::AbstractArray{T,2},n::N,m::N,i::N,j::N) where {T<:Number,N<:Integer}
-    ( length(stencil) == 9 ) || throw(ArgumentError("only stencils of size 3x3 are supported"))
+function stencil2mat(stencil::SMatrix{3,3},n::Int,m::Int,i::Int,j::Int)
     el = sub2ind((n-1,m-1),i,j)
     els = [el+n-2 el+n-1 el+n; el-1 el el+1; el-n el-n+1 el-n+2]
-    idcs = lexicographic_idcs(el,n,m)
+    idcs = lexicographic_idcs_3(el,n,m)
     is = [el for k in 1:prod(length.(idcs))]
     js = els[idcs...]
     vs = stencil[idcs...]
@@ -106,7 +114,7 @@ function stencil2mat(stencil::AbstractArray{T,2},n::N,m::N,i::N,j::N) where {T<:
 end
 
 # helper function for lexicographic ordening of the indices
-function lexicographic_idcs(el,n)
+function lexicographic_idcs_3(el,n)
     if el == 1
         return 2:3
     elseif el == n-1
@@ -116,7 +124,19 @@ function lexicographic_idcs(el,n)
     end
 end
 
-function lexicographic_idcs(el,n,m)
+function lexicographic_idcs_7(el,n)
+    if n == 4
+        return 3:5
+    elseif el == 1 || el == 2
+        return 3:7
+    elseif el == n-1 || el == n-2
+        return 1:5
+    else
+        return 1:7
+    end
+end
+
+function lexicographic_idcs_3(el,n,m)
     if el == 1 # SW corner
         return (1:2,2:3)
     elseif el == n-1 # SE corner
