@@ -111,18 +111,30 @@ M : MultigridMethod
 b : right-hand side
 """
 function \(mg::MultigridMethod, b::AbstractVector)
-    length(b) == length(mg.grids[1].b) || throw(DimensionMismatch("Right-hand side b has length $(length(b)), but needs $(length(mg.grids[1].b))"))
+    length(b) == length(mg.grids[1].b) || throw(DimensionMismatch("Right-hand side b has length $(length(b)), but needs $(length(mg.grids[1].b))")) # check dimensions
     mg.grids[1].b .= b # copy rhs
-    tol = 1/prod(mg.grids[1].sz) # target norm of residu is O(h²)
     push!(mg.resnorm,norm_of_residu(mg.grids[1])) # log convergence history
-    for i in 1:mg.max_iter
-        cycle!(mg)
-        push!(mg.resnorm,norm_of_residu(mg.grids[1]))
-        if ( mg.resnorm[i] < tol ); break; end
-    end
+
+    for item in Base.Iterators.take(mg,mg.max_iter) end # iterate
+
+    mg.resnorm[end] >= 1/prod(mg.grids[1].sz) && warn(2sprintf("maximum number of iterations reached, norm of residual is %6.3e > %6.3e",mg.resnorm[end],1/prod(mg.grids[1].sz))) # check convergence with max_iter igterations
+
     return mg.grids[1].x
 end
 
+# iterator commands
+start(mg::MultigridMethod) = 1
+
+done(mg::MultigridMethod, it::Int) = mg.resnorm[end] < 1/prod(mg.grids[1].sz) # target norm of residu is O(h²)
+
+function next(mg::MultigridMethod, it::Int)
+    cycle!(mg)
+    push!(mg.resnorm,norm_of_residu(mg.grids[1])) # log convergence history
+
+    nothing, it+1
+end
+
+# multigrid cycles
 cycle!(mg::MultigridMethod{C} where {C<:V}) = μ_cycle!(mg.grids,1,mg.cycle_type.ν₁,mg.cycle_type.ν₂,1,mg.smoother)
 cycle!(mg::MultigridMethod{C} where {C<:W}) = μ_cycle!(mg.grids,2,mg.cycle_type.ν₁,mg.cycle_type.ν₂,1,mg.smoother)
 cycle!(mg::MultigridMethod{C} where {C<:F}) = F_cycle!(mg.grids,mg.cycle_type.ν₀,mg.cycle_type.ν₁,mg.cycle_type.ν₂,1,mg.smoother)
