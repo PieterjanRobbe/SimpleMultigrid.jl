@@ -23,18 +23,18 @@ end
 F() = F(2,2,1)
 
 # Multigrid struct
-struct MultigridMethod{C<:MultigridCycle,Gs,S,V}
+struct MultigridIterable{C<:MultigridCycle,Gs,S,V}
     grids::Gs
     max_iter::Int
     cycle_type::C
     smoother::S
     resnorm::V
 end
-show(io::IO, mg::MultigridMethod) = print(io, string("$(length(mg.grids))-level Multigrid method"))
+show(io::IO, mg::MultigridIterable) = print(io, string("$(length(mg.grids))-level Multigrid method"))
 
 """
-    MultigridMethod(A, sz, cycle_type)
-    MultigridMethod(A, sz, cycle_type; kwargs...)
+    MultigridIterable(A, sz, cycle_type)
+    MultigridIterable(A, sz, cycle_type; kwargs...)
 
 Geometric Multigrid method of type `cycle_type` for matrix `A`, that results from a discretization of a PDE on [0,1]^d using an `sz`-point mesh.
 
@@ -52,7 +52,7 @@ Options
 * ngrids   : total number of grids to use, default is `min.(⌊log₂(sz)⌋)`
 * smoother : smoother, can be `GaussSeidel()` of `Jacobi()`
 """
-MultigridMethod(A::AbstractMatrix, sz::NTuple, cycle_type::MultigridCycle; max_iter::Int=20, R_op::TransferKind=FullWeighting(), P_op::TransferKind=FullWeighting(), ngrids::Int=minimum(floor.(Int,log2.(sz))), smoother::Smoother=GaussSeidel()) = MultigridMethod(coarsen(A,sz,R_op,P_op,ngrids),max_iter,cycle_type,smoother,Float64[])
+MultigridIterable(A::AbstractMatrix, sz::NTuple, cycle_type::MultigridCycle; max_iter::Int=20, R_op::TransferKind=FullWeighting(), P_op::TransferKind=FullWeighting(), ngrids::Int=minimum(floor.(Int,log2.(sz))), smoother::Smoother=GaussSeidel()) = MultigridIterable(coarsen(A,sz,R_op,P_op,ngrids),max_iter,cycle_type,smoother,Float64[])
 
 """
     V_cycle(A, sz)
@@ -65,9 +65,9 @@ Inputs
 A          : SparseMatrixCSC, sparse matrix with discretized PDE
 sz         : NTuple, PDE grid size, e.g., `(n,m)`
 
-For other options, see `MultigridMethod`.
+For other options, see `MultigridIterable`.
 """
-V_cycle(A::AbstractMatrix, sz::NTuple; kwargs...) = MultigridMethod(A,sz,V(); kwargs...)
+V_cycle(A::AbstractMatrix, sz::NTuple; kwargs...) = MultigridIterable(A,sz,V(); kwargs...)
 
 """
     W_cycle(A, sz)
@@ -80,9 +80,9 @@ Inputs
 A          : SparseMatrixCSC, sparse matrix with discretized PDE
 sz         : NTuple, PDE grid size, e.g., `(n,m)`
 
-For other options, see `MultigridMethod`.
+For other options, see `MultigridIterable`.
 """
-W_cycle(A::AbstractMatrix, sz::NTuple; kwargs...) = MultigridMethod(A,sz,W(); kwargs...)
+W_cycle(A::AbstractMatrix, sz::NTuple; kwargs...) = MultigridIterable(A,sz,W(); kwargs...)
 
 """
 F_cycle(A, sz)
@@ -95,9 +95,9 @@ Inputs
 A          : SparseMatrixCSC, sparse matrix with discretized PDE
 sz         : NTuple, PDE grid size, e.g., `(n,m)`
 
-For other options, see `MultigridMethod`.
+For other options, see `MultigridIterable`.
 """
-F_cycle(A::AbstractMatrix, sz::NTuple; kwargs...) = MultigridMethod(A,sz,F(); max_iter=1, kwargs...)
+F_cycle(A::AbstractMatrix, sz::NTuple; kwargs...) = MultigridIterable(A,sz,F(); max_iter=1, kwargs...)
 
 # solver
 """
@@ -107,10 +107,10 @@ Solve the matrix problem `Mx=b` using Multigrid.
 
 Inputs
 ======
-M : MultigridMethod
+M : MultigridIterable
 b : right-hand side
 """
-function \(mg::MultigridMethod, b::AbstractVector)
+function \(mg::MultigridIterable, b::AbstractVector)
     length(b) == length(mg.grids[1].b) || throw(DimensionMismatch("Right-hand side b has length $(length(b)), but needs $(length(mg.grids[1].b))")) # check dimensions
     mg.grids[1].b .= b # copy rhs
     push!(mg.resnorm,norm_of_residu(mg.grids[1])) # log convergence history
@@ -123,11 +123,11 @@ function \(mg::MultigridMethod, b::AbstractVector)
 end
 
 # iterator commands
-start(mg::MultigridMethod) = 1
+start(mg::MultigridIterable) = 1
 
-done(mg::MultigridMethod, it::Int) = mg.resnorm[end] < 1/prod(mg.grids[1].sz) # target norm of residu is O(h²)
+done(mg::MultigridIterable, it::Int) = mg.resnorm[end] < 1/prod(mg.grids[1].sz) # target norm of residu is O(h²)
 
-function next(mg::MultigridMethod, it::Int)
+function next(mg::MultigridIterable, it::Int)
     cycle!(mg)
     push!(mg.resnorm,norm_of_residu(mg.grids[1])) # log convergence history
 
@@ -135,9 +135,9 @@ function next(mg::MultigridMethod, it::Int)
 end
 
 # multigrid cycles
-cycle!(mg::MultigridMethod{C} where {C<:V}) = μ_cycle!(mg.grids,1,mg.cycle_type.ν₁,mg.cycle_type.ν₂,1,mg.smoother)
-cycle!(mg::MultigridMethod{C} where {C<:W}) = μ_cycle!(mg.grids,2,mg.cycle_type.ν₁,mg.cycle_type.ν₂,1,mg.smoother)
-cycle!(mg::MultigridMethod{C} where {C<:F}) = F_cycle!(mg.grids,mg.cycle_type.ν₀,mg.cycle_type.ν₁,mg.cycle_type.ν₂,1,mg.smoother)
+cycle!(mg::MultigridIterable{C} where {C<:V}) = μ_cycle!(mg.grids,1,mg.cycle_type.ν₁,mg.cycle_type.ν₂,1,mg.smoother)
+cycle!(mg::MultigridIterable{C} where {C<:W}) = μ_cycle!(mg.grids,2,mg.cycle_type.ν₁,mg.cycle_type.ν₂,1,mg.smoother)
+cycle!(mg::MultigridIterable{C} where {C<:F}) = F_cycle!(mg.grids,mg.cycle_type.ν₀,mg.cycle_type.ν₁,mg.cycle_type.ν₂,1,mg.smoother)
 
 function μ_cycle!(grids::Vector{G} where {G<:Grid}, μ::Int, ν₁::Int, ν₂::Int, grid_ptr::Int, smoother::Smoother)
     smooth!(grids[grid_ptr],ν₁,smoother)

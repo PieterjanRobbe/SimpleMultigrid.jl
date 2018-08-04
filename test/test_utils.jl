@@ -1,7 +1,7 @@
 # test_utils.jl : utilities for testing SimpleMultigrid
 
 # log resnorm
-function log(mg::MultigridMethod)
+function log(mg::MultigridIterable)
     println(string("+","-"^30,"+"))
     println(string("|"," "^11,@sprintf("n = %4i",sqrt(size(mg.grids[1].A,1))+1)," "^11,"|"))
     println(string("+","-"^9,"+","-"^20,"+"))
