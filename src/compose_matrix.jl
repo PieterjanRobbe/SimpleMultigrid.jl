@@ -157,4 +157,3 @@ function lexicographic_idcs_3(el,n,m)
         return (1:3,1:3)
     end
 end
-
