@@ -32,8 +32,6 @@ end
 
 zero_x(A::SparseMatrixCSC) = zeros(eltype(A),size(A,1)) 
 
-δ(i,n) = Int[j==i for j=1:n]
-
 # compute the residu on this level
 residu(grid::Grid) = grid.b - grid.A*grid.x
 

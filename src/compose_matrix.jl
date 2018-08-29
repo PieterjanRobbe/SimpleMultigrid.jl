@@ -115,7 +115,9 @@ end
 
 # helper function for lexicographic ordening of the indices
 function lexicographic_idcs_3(el,n)
-    if el == 1
+    if n == 2 # hack for problem with n = 2
+        return 2:2
+    elseif el == 1
         return 2:3
     elseif el == n-1
         return 1:2
@@ -137,7 +139,9 @@ function lexicographic_idcs_7(el,n)
 end
 
 function lexicographic_idcs_3(el,n,m)
-    if el == 1 # SW corner
+    if n == 2 && m == 2
+        return (2:2,2:2) # hack for 2x2 problems
+    elseif el == 1 # SW corner
         return (1:2,2:3)
     elseif el == n-1 # SE corner
         return (1:2,1:2)

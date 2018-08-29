@@ -117,7 +117,7 @@ function \(mg::MultigridIterable, b::AbstractVector)
 
     for item in Base.Iterators.take(mg,mg.max_iter) end # iterate
 
-    mg.resnorm[end] >= 1/prod(mg.grids[1].sz) && warn(2sprintf("maximum number of iterations reached, norm of residual is %6.3e > %6.3e",mg.resnorm[end],1/prod(mg.grids[1].sz))) # check convergence with max_iter igterations
+    mg.resnorm[end] >= 1/prod(mg.grids[1].sz) && warn(@sprintf("maximum number of iterations reached, norm of residual is %6.3e > %6.3e",mg.resnorm[end],1/prod(mg.grids[1].sz))) # check convergence with max_iter igterations
 
     return mg.grids[1].x
 end
@@ -154,7 +154,7 @@ end
 
 function F_cycle!(grids::Vector{G} where {G<:Grid}, ν₀::Int, ν₁::Int, ν₂::Int, grid_ptr::Int, smoother::Smoother)
     if grid_ptr == length(grids)
-        grids[grid_ptr].x .= grids[grid_ptr].A\grids[grid_ptr].b # exact solve
+        grids[grid_ptr].x .= zeros(grids[grid_ptr].x)
     else
         grids[grid_ptr+1].b .= grids[grid_ptr].R*grids[grid_ptr].b
         F_cycle!(grids,ν₀,ν₁,ν₂,grid_ptr+1,smoother)
