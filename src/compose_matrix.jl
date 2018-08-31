@@ -139,22 +139,23 @@ function lexicographic_idcs_7(el,n)
 end
 
 function lexicographic_idcs_3(el,n,m)
-    if n == 2 && m == 2
-        return (2:2,2:2) # hack for 2x2 problems
-    elseif el == 1 # SW corner
-        return (1:2,2:3)
+    r = n == 2 ? 2 : 1 # catch matrices of size 2xN or Mx2 or 2x2
+    s = m == 2 ? 2 : 1
+    t = n == 2 ? 2 : 3
+    if el == 1 # SW corner
+        return (s:2,2:t)
     elseif el == n-1 # SE corner
-        return (1:2,1:2)
+        return (s:2,1:2)
     elseif el == (n-1)*(m-2)+1 # NW corner
-        return (2:3,2:3)
+        return (2:3,2:t)
     elseif el == (n-1)*(m-1) # NE corner
         return (2:3,1:2)
     elseif el < n-1 # S border
-        return (1:2,1:3)
+        return (s:2,1:3)
     elseif mod(el,n-1) == 1 # W border
         return (1:3,2:3)
     elseif mod(el,n-1) == 0 # E border
-        return (1:3,1:2)
+        return (1:3,r:2)
     elseif el > (n-1)*(m-2)+1 # N border
         return (2:3,1:3)
     else # mid
