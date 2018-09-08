@@ -88,24 +88,26 @@ function _stencil2mat(stencil::SArray,I,I1,Iend)
     Is,Js,Vs
 end
 
-# main driver code for length 7 constant stencils (used in `Cubic()` interpolation)
+# main driver code for length 7 constant 1d stencils (used in `Cubic()` interpolation)
 function _stencil2mat(stencil::SVector{7},I,I1,Iend)
-    @show I
     R = CartesianRange(max(I1, I-3I1), min(Iend, I+3I1))
-    @show R
     Is = fill(0,length(R))
     Js = fill(0,length(R))
     Vs = fill(0.,length(R))
     for (i,J) in enumerate(R)
-        @show J
         idx = J-I+4I1
-        @show idx
         Is[i] = sub2ind(Iend.I,I.I...)
         Js[i] = sub2ind(Iend.I,J.I...)
         Vs[i] = stencil[idx]
     end
+    if I.I[1] == 2 # correction for boundary
+        Vs[1] .+= 1/16
+    elseif I.I[1] == Iend.I[1]-1
+        Vs[end] .+= 1/16
+    end
     Is,Js,Vs
 end
+
 # construction for non-constant stencil problems
 function stencil2mat(stencil::SArray,k::AbstractArray)
     n = size(k).-2

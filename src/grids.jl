@@ -9,6 +9,7 @@ struct Grid{matT<:SparseMatrixCSC,vecT<:AbstractVector,opeT,tupT<:NTuple}
     P::opeT # prolongation matrix
     sz::tupT # PDE grid size
 end
+
 show(io::IO, grid::Grid) = print(io, string(join(grid.sz," x ")," grid"))
 
 # coarsen the problem A into a sequence of coarser grids
@@ -21,7 +22,7 @@ function coarsen(A::SparseMatrixCSC, sz::NTuple, R_op::TransferKind, P_op::Trans
     grids = Vector{Grid{typeof(A),Vector{eltype(A)},typeof(A),typeof(sz)}}(ngrids)
     grids[1] = Grid(A,zero_x(A),zero_x(A),R(R_op,sz...),spzeros(0,0),sz)
     for i in 2:ngrids
-        sz_c = grids[i-1].sz.>>1#ceil.(Int,grids[i-1].sz./2) #grids[i-1].sz.>>1
+        sz_c = grids[i-1].sz.>>1
         R_mat = R(R_op,sz_c...)
         P_mat = P(P_op,sz_c...)
         A_c = grids[i-1].R*grids[i-1].A*P_mat
@@ -30,6 +31,9 @@ function coarsen(A::SparseMatrixCSC, sz::NTuple, R_op::TransferKind, P_op::Trans
     grids
 end
 
+# automatically determine number of grids
+# TODO: because of the way the grid transfer operators are implemented
+# we can only do prolongation for grids with an even number of points...
 function factor_twos(n::Int)
     i = 0
     while iseven(n) && n > 1

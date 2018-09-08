@@ -66,17 +66,8 @@ function expand(op::GridTransferOperator{K,O} where {K,O},n)
             push!(Vs,vs...)
         end
     end
-    S = sparse_matrix_from_op(op,Is,Js,Vs)
-    apply_boundary!(op,S)
+    operator2matrix(op,Is,Js,Vs)
 end
 
-sparse_matrix_from_op(op::GridTransferOperator{K,Interpolation} where {K},Is,Js,Vs) = sparse(Js,Is,Vs)
-sparse_matrix_from_op(op::GridTransferOperator{K,Restriction} where {K},Is,Js,Vs) = sparse(Is,Js,Vs)
-
-# correction for boundary in cubic interpolation operator
-function apply_boundary!(op::GridTransferOperator{Cubic,Interpolation},S::SparseMatrixCSC)
-    S[1,1] .+= 1/16 
-    S[end,end] .+= 1/16 
-    return S
-end
-apply_boundary!(op::GridTransferOperator,S::SparseMatrixCSC) = S
+operator2matrix(op::GridTransferOperator{K,Interpolation} where {K},Is,Js,Vs) = sparse(Js,Is,Vs)
+operator2matrix(op::GridTransferOperator{K,Restriction} where {K},Is,Js,Vs) = sparse(Is,Js,Vs)
