@@ -21,13 +21,22 @@ function coarsen(A::SparseMatrixCSC, sz::NTuple, R_op::TransferKind, P_op::Trans
     grids = Vector{Grid{typeof(A),Vector{eltype(A)},typeof(A),typeof(sz)}}(ngrids)
     grids[1] = Grid(A,zero_x(A),zero_x(A),R(R_op,sz...),spzeros(0,0),sz)
     for i in 2:ngrids
-        sz_c = grids[i-1].sz.>>1
+        sz_c = grids[i-1].sz.>>1#ceil.(Int,grids[i-1].sz./2) #grids[i-1].sz.>>1
         R_mat = R(R_op,sz_c...)
         P_mat = P(P_op,sz_c...)
         A_c = grids[i-1].R*grids[i-1].A*P_mat
         grids[i] = Grid(A_c,zero_x(A_c),zero_x(A_c),R_mat,P_mat,sz_c)
     end
     grids
+end
+
+function factor_twos(n::Int)
+    i = 0
+    while iseven(n) && n > 1
+        n >>= 1
+        i+=1
+    end
+    i
 end
 
 zero_x(A::SparseMatrixCSC) = zeros(eltype(A),size(A,1)) 

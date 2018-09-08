@@ -52,15 +52,22 @@ prolongate(u,op) = interpolate(u,op)
 
 # expand
 function expand(op::GridTransferOperator{K,O} where {K,O},n)
-    Is = Int64[]; Js = Int64[]; Vs = Float64[]
-    for (idx,i) in enumerate(2:2:n-1)
-        (is,js,vs) = stencil2mat(stencil(op),n,i)
-        push!(Is,idx*ones(length(is))...)
-        push!(Js,js...)
-        push!(Vs,vs...)
+    st = stencil(op)
+    R = CartesianRange((n-1,))
+    I1, Iend = first(R), last(R)
+    Is = Int64[]
+    Js = Int64[]
+    Vs = Float64[]
+    for I in R
+        if iseven(I.I[1])
+            is,js,vs = _stencil2mat(st,I,I1,Iend)
+            push!(Is,is.>>1...)
+            push!(Js,js...)
+            push!(Vs,vs...)
+        end
     end
     S = sparse_matrix_from_op(op,Is,Js,Vs)
-    return apply_boundary!(op,S) 
+    apply_boundary!(op,S)
 end
 
 sparse_matrix_from_op(op::GridTransferOperator{K,Interpolation} where {K},Is,Js,Vs) = sparse(Js,Is,Vs)

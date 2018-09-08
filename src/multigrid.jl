@@ -52,7 +52,7 @@ Options
 * ngrids   : total number of grids to use, default is `min.(⌊log₂(sz)⌋)`
 * smoother : smoother, can be `GaussSeidel()` of `Jacobi()`
 """
-MultigridMethod(A::AbstractMatrix, sz::NTuple, cycle_type::MultigridCycle; max_iter::Int=20, R_op::TransferKind=FullWeighting(), P_op::TransferKind=FullWeighting(), ngrids::Int=minimum(floor.(Int,log2.(sz))), smoother::Smoother=GaussSeidel()) = MultigridIterable(coarsen(A,sz,R_op,P_op,ngrids),max_iter,cycle_type,smoother,Float64[])
+MultigridMethod(A::AbstractMatrix, sz::NTuple, cycle_type::MultigridCycle; max_iter::Int=20, R_op::TransferKind=FullWeighting(), P_op::TransferKind=FullWeighting(), ngrids::Int=minimum(factor_twos.(sz)), smoother::Smoother=GaussSeidel()) = MultigridIterable(coarsen(A,sz,R_op,P_op,ngrids),max_iter,cycle_type,smoother,Float64[])
 
 """
     V_cycle(A, sz)
@@ -117,7 +117,7 @@ function \(mg::MultigridIterable, b::AbstractVector)
 
     for item in Base.Iterators.take(mg,mg.max_iter) end # iterate
 
-    mg.resnorm[end] >= 1/prod(mg.grids[1].sz) && warn(@sprintf("maximum number of iterations reached, norm of residual is %6.3e > %6.3e",mg.resnorm[end],1/prod(mg.grids[1].sz))) # check convergence with max_iter igterations
+    mg.resnorm[end] >= 1/prod(mg.grids[1].sz) && warn(@sprintf("maximum number of iterations reached, norm of residual is %6.3e > %6.3e",mg.resnorm[end],1/prod(mg.grids[1].sz))) # check convergence with max_iter iterations
 
     return mg.grids[1].x
 end

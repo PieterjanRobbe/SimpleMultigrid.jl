@@ -18,11 +18,9 @@ end
     for n in [16 32 64 128 256 512 1024]
         (A,b) = get_problem(n)
         A.grids[1].b .= b # copy rhs
-        tol = 1/prod(A.grids[1].sz)*SimpleMultigrid.norm_of_residu(A.grids[1]) # target norm of residu is O(h²)
         push!(A.resnorm,SimpleMultigrid.norm_of_residu(A.grids[1])) # log convergence history
         for i in 1:15
-            SimpleMultigrid.cycle!(A)
-            push!(A.resnorm,SimpleMultigrid.norm_of_residu(A.grids[1])) # log convergence history
+            next(A,i)
         end
         @test A.resnorm[end] < 1/n^2
         log(A)

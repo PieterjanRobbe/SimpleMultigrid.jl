@@ -5,39 +5,22 @@
 
 1d Laplacian on [0,1] using n points
 """
-function laplace1d(n)
-    stencil = @SVector [-n^2,2n^2,-n^2]
-    Is = Int64[]
-    Js = Int64[]
-    Vs = Float64[]
-    for i = 1:n-1
-        (is,js,vs) = stencil2mat(stencil,n,i)
-        push!(Is,is...)
-        push!(Js,js...)
-        push!(Vs,vs...)
-    end
-    return sparse(Is,Js,Vs)
-end
+laplace1d(n) = stencil2mat(SArray{Tuple{3}}([-n^2 2n^2 -n^2]), n)
 
 """
-    laplace2d(n,m)
+    laplace2d(n, m)
 
 2d Laplacian on [0,1]^2 using n x m points 
 """
-function laplace2d(n,m)
-    stencil = @SMatrix [0 -m^2 0; -n^2 2n^2+2m^2 -n^2; 0 -m^2 0]
-    Is = Int64[]
-    Js = Int64[]
-    Vs = Float64[]
-    for i in 1:n-1, j in 1:m-1
-        (is,js,vs) = stencil2mat(stencil,n,m,i,j)
-        push!(Is,is...)
-        push!(Js,js...)
-        push!(Vs,vs...)
-    end
-    return sparse(Is,Js,Vs)
-end
+laplace2d(n, m) = stencil2mat(SArray{Tuple{3,3}}([0 -m^2 0 -n^2 2(n^2+m^2) -n^2 0 -m^2 0]), n, m)
 
+"""
+    laplace3d(n, m, l)
+
+3d Laplacian on [0,1]^3 using n x m x l points 
+"""
+laplace3d(n, m, l) = stencil2mat(SArray{Tuple{3,3,3}}([0 0 0 0 -l^2 0 0 0 0 0 -m^2 0 -n^2 2(m^2+n^2+l^2) -n^2 0 -m^2 0 0 0 0 0 -l^2 0 0 0 0]), n, m, l)
+    
 """
     elliptic1d(k)
 
@@ -47,17 +30,7 @@ boundaries included. The step size is thus h = 1/n.
 """
 function elliptic1d(k)
     n = length(k)-1
-    Is = Int64[]
-    Js = Int64[]
-    Vs = Float64[]
-    for i = 1:n-1
-        stencil = @SVector [-k[i]*n^2,2*k[i+1]*n^2,-k[i+2]*n^2]
-        (is,js,vs) = stencil2mat(stencil,n,i)
-        push!(Is,is...)
-        push!(Js,js...)
-        push!(Vs,vs...)
-    end
-    return sparse(Is,Js,Vs)
+    stencil2mat(SArray{Tuple{3}}([-n^2 2n^2 -n^2]), k)
 end
 
 """
@@ -68,97 +41,99 @@ The diffusion coefficient k must given on an equidistant grid with nodes {0,1,..
 boundaries included. The step sizes are thus h_x = 1/n and h_y = 1/m.
 """
 function elliptic2d(k)
-    (n,m) = size(k).-1
+    n,m = size(k).-1
+    stencil2mat(SArray{Tuple{3,3}}([0 -m^2 0 -n^2 2(n^2+m^2) -n^2 0 -m^2 0]), k)
+end
+
+"""
+    elliptic3d(k)
+
+Generate system matrix for general 3d elliptic PDE defined on [0,1]^3.
+The diffsion coefficient k must given on an equidistant grid with nodes {0,1,...,n}x{0,1,..,m}x{0,1,...,l}, 
+boundaries included. The step sizes are thus h_x = 1/n, h_y = 1/m and h_z = 1/l.
+"""
+function elliptic3d(k)
+    n,m,l = size(k).-1
+    stencil2mat(SArray{Tuple{3,3,3}}([0 0 0 0 -l^2 0 0 0 0 0 -m^2 0 -n^2 2(n^2+m^2+l^2) -n^2 0 -m^2 0 0 0 0 0 -l^2 0 0 0 0]), k)
+end
+
+# construction for constant stencil problems
+function stencil2mat(stencil::SArray,n::Int...)
+    R = CartesianRange(n.-1)
+    I1, Iend = first(R), last(R)
     Is = Int64[]
     Js = Int64[]
     Vs = Float64[]
-    for i in 1:n-1, j in 1:m-1
-        stencil = @SMatrix [0 -m^2*k[i+1,j+2] 0; -n^2*k[i,j+1] n^2*(k[i,j+1]+k[i+2,j+1])+m^2*(k[i+1,j+2]+k[i+1,j]) -n^2*k[i+2,j+1]; 0 -m^2*k[i+1,j] 0]
-        (is,js,vs) = stencil2mat(stencil,n,m,i,j)
+    for I in R
+        is,js,vs = _stencil2mat(stencil,I,I1,Iend)
         push!(Is,is...)
         push!(Js,js...)
         push!(Vs,vs...)
     end
-    return sparse(Is,Js,Vs)
+    sparse(Is,Js,Vs)
 end
 
-# convert stencil to sparse matrix - 1d - length 3
-function stencil2mat(stencil::SVector{3},n::Int,i::Int)
-    els = [i-1,i,i+1]
-    idcs = lexicographic_idcs_3(i,n)
-    is = [i for k in 1:length(idcs)]
-    js = els[idcs]
-    vs = stencil[idcs]
-    return (is,js,vs)
-end
-
-# convert stencil to sparse matrix - 1d - length 7
-function stencil2mat(stencil::SVector{7},n::Int,i::Int)
-    els = [i-3,i-2,i-1,i,i+1,i+2,i+3]
-    idcs = lexicographic_idcs_7(i,n)
-    is = [i for k in 1:length(idcs)]
-    js = els[idcs]
-    vs = stencil[idcs]
-    return (is,js,vs)
-end
-
-# convert stencil to sparse matrix - 2d
-function stencil2mat(stencil::SMatrix{3,3},n::Int,m::Int,i::Int,j::Int)
-    el = sub2ind((n-1,m-1),i,j)
-    els = [el+n-2 el+n-1 el+n; el-1 el el+1; el-n el-n+1 el-n+2]
-    idcs = lexicographic_idcs_3(el,n,m)
-    is = [el for k in 1:prod(length.(idcs))]
-    js = els[idcs...]
-    vs = stencil[idcs...]
-    return (is,js,vs)
-end
-
-# helper function for lexicographic ordening of the indices
-function lexicographic_idcs_3(el,n)
-    if n == 2 # hack for problem with n = 2
-        return 2:2
-    elseif el == 1
-        return 2:3
-    elseif el == n-1
-        return 1:2
-    else
-        return 1:3
+# main driver code - constant stencil
+function _stencil2mat(stencil::SArray,I,I1,Iend)
+    R = CartesianRange(max(I1, I-I1), min(Iend, I+I1))
+    Is = fill(0,length(R))
+    Js = fill(0,length(R))
+    Vs = fill(0.,length(R))
+    for (i,J) in enumerate(R)
+        idx = J-I+2I1
+        Is[i] = sub2ind(Iend.I,I.I...)
+        Js[i] = sub2ind(Iend.I,J.I...)
+        Vs[i] = stencil[idx]
     end
+    Is,Js,Vs
 end
 
-function lexicographic_idcs_7(el,n)
-    if n == 4
-        return 3:5
-    elseif el == 1 || el == 2
-        return 3:7
-    elseif el == n-1 || el == n-2
-        return 1:5
-    else
-        return 1:7
+# main driver code for length 7 constant stencils (used in `Cubic()` interpolation)
+function _stencil2mat(stencil::SVector{7},I,I1,Iend)
+    @show I
+    R = CartesianRange(max(I1, I-3I1), min(Iend, I+3I1))
+    @show R
+    Is = fill(0,length(R))
+    Js = fill(0,length(R))
+    Vs = fill(0.,length(R))
+    for (i,J) in enumerate(R)
+        @show J
+        idx = J-I+4I1
+        @show idx
+        Is[i] = sub2ind(Iend.I,I.I...)
+        Js[i] = sub2ind(Iend.I,J.I...)
+        Vs[i] = stencil[idx]
     end
+    Is,Js,Vs
+end
+# construction for non-constant stencil problems
+function stencil2mat(stencil::SArray,k::AbstractArray)
+    n = size(k).-2
+    R = CartesianRange(n)
+    I1, Iend = first(R), last(R)
+    Is = Int64[]
+    Js = Int64[]
+    Vs = Float64[]
+    for I in R
+        is,js,vs = _stencil2mat(k,stencil,I,I1,Iend)
+        push!(Is,is...)
+        push!(Js,js...)
+        push!(Vs,vs...)
+    end
+    sparse(Is,Js,Vs)
 end
 
-function lexicographic_idcs_3(el,n,m)
-    r = n == 2 ? 2 : 1 # catch matrices of size 2xN or Mx2 or 2x2
-    s = m == 2 ? 2 : 1
-    t = n == 2 ? 2 : 3
-    if el == 1 # SW corner
-        return (s:2,2:t)
-    elseif el == n-1 # SE corner
-        return (s:2,1:2)
-    elseif el == (n-1)*(m-2)+1 # NW corner
-        return (2:3,2:t)
-    elseif el == (n-1)*(m-1) # NE corner
-        return (2:3,1:2)
-    elseif el < n-1 # S border
-        return (s:2,1:3)
-    elseif mod(el,n-1) == 1 # W border
-        return (1:3,2:3)
-    elseif mod(el,n-1) == 0 # E border
-        return (1:3,r:2)
-    elseif el > (n-1)*(m-2)+1 # N border
-        return (2:3,1:3)
-    else # mid
-        return (1:3,1:3)
+# main driver code - non-constant stencil
+function _stencil2mat(k::AbstractArray,stencil::SArray,I,I1,Iend)
+    R = CartesianRange(max(I1, I-I1), min(Iend, I+I1))
+    Is = fill(0,length(R))
+    Js = fill(0,length(R))
+    Vs = fill(0.,length(R))
+    for (i,J) in enumerate(R)
+        idx = J-I+2I1
+        Is[i] = sub2ind(Iend.I,I.I...)
+        Js[i] = sub2ind(Iend.I,J.I...)
+        Vs[i] = k[J+I1]*stencil[idx]
     end
+    Is,Js,Vs
 end
