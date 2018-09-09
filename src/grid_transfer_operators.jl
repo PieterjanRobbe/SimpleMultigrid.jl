@@ -38,13 +38,13 @@ stencil(op::GridTransferOperator{Cubic,Interpolation}) = @SVector [-1/16,0,9/16,
 # restriction
 R₁(op::TransferKind,n::Int) = expand(GridTransferOperator(op,Restriction()),n) # 1d restriction operator
 R(op::TransferKind,n::Int) = R₁(op,n)
-R(op::TransferKind,n::Int...) = kron(R₁.(op,reverse(n))...)
+R(op::TransferKind,n::Int...) = kron(R₁.(op,n)...)
 restrict(u::Vector{T},op::TransferKind,n::Int...) where {T<:AbstractFloat} = R(op,n...)*u
 
 # interpolation
-P₁(op::TransferKind,n::Int) = expand(GridTransferOperator(op,Interpolation()),n) # 1d interpolation operator
-P(op::TransferKind,n::Int) = P₁(op,2n)
-P(op::TransferKind,n::Int...) = kron(P₁.(op,2.*reverse(n))...)
+P₁(op::TransferKind,n::Int) = expand(GridTransferOperator(op,Interpolation()),2n) # 1d interpolation operator
+P(op::TransferKind,n::Int) = P₁(op,n)
+P(op::TransferKind,n::Int...) = kron(P₁.(op,n)...)
 interpolate(u::Vector{T},op::TransferKind,n::Int...) where {T<:AbstractFloat} = P(op,n...)*u
 
 # prolongation = interpolation
