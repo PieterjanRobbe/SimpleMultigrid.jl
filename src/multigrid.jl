@@ -33,7 +33,7 @@ end
 
 show(io::IO, mg::MultigridIterable) = print(io, print_grid_sizes(mg.grids), "-grid Multigrid method")
 
-print_grid_sizes(grids::Array{<:Grid}) = join(size(grids))
+print_grid_sizes(grids::Array{<:Grid}) = join(size(grids),"x")
 
 """
     MultigridMethod(A, sz, cycle_type)
