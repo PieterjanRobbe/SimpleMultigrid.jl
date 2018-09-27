@@ -7,9 +7,9 @@ using IterativeSolvers, StaticArrays
 # export statements
 export laplace1d, laplace2d, laplace3d, elliptic1d, elliptic2d, elliptic3d
 export Injection, FullWeighting, Cubic
-export GaussSeidel, Jacobi
+export GaussSeidel, Jacobi, SOR
 export coarsen
-export MultigridMethod, V_cycle, W_cycle, F_cycle, \
+export MultigridMethod, V, W, F, V_cycle, W_cycle, F_cycle, \
 
 # import statements
 import Base: expand, show, start, next, done, \

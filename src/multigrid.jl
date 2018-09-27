@@ -38,12 +38,15 @@ print_grid_sizes(grids::Array{<:Grid}) = join(size(grids),"x")
 """
     MultigridMethod(A, sz, cycle_type)
     MultigridMethod(A, sz, cycle_type; kwargs...)
+    MultigridMethod(f, sz, cycle_type)
+    MultigridMethod(f, sz, cycle_type; kwargs...)
 
-Geometric Multigrid method of type `cycle_type` for matrix `A`, that results from a discretization of a PDE on [0,1]^d using an `sz`-point mesh.
+Geometric Multigrid method of type `cycle_type` for matrix `A`, that results from a discretization of a PDE on [0,1]^d using an `sz`-point mesh. A Galerkin approach is used to compose the coarse matrices, unless a function `f` is provided for direct discretization.
 
 Inputs
 ======
 A          : SparseMatrixCSC, sparse matrix with discretized PDE
+f          : Function, function used for direct-discretization of the PDE
 sz         : NTuple, PDE grid size, e.g., `(n,m)`
 cycle_type : Multigrid cycle type, can be `V(ν₁,ν₂)` (V-cycle), `W(ν₁,ν₂)` (W-cycle) or `F(ν₀,ν₁,ν₂)` (FMG)
 
@@ -55,7 +58,7 @@ Options
 * ngrids   : total number of grids to use, default is `min.(⌊log₂(sz)⌋)`
 * smoother : smoother, can be `GaussSeidel()` of `Jacobi()`
 """
-MultigridMethod(A::AbstractMatrix, sz::NTuple, cycle_type::MultigridCycle; max_iter::Int=20, R_op::TransferKind=FullWeighting(), P_op::TransferKind=FullWeighting(), ngrids::Int=minimum(factor_twos.(sz)), smoother::Smoother=GaussSeidel()) = MultigridIterable(coarsen(A,sz,R_op,P_op,ngrids),max_iter,cycle_type,smoother,Float64[])
+MultigridMethod(A::Union{AbstractMatrix,Function}, sz::NTuple, cycle_type::MultigridCycle; max_iter::Int=20, R_op::TransferKind=FullWeighting(), P_op::TransferKind=FullWeighting(), ngrids::Int=minimum(factor_twos.(sz)), smoother::Smoother=GaussSeidel()) = MultigridIterable(coarsen(A,sz,R_op,P_op,ngrids),max_iter,cycle_type,smoother,Float64[])
 
 """
     V_cycle(A, sz)
@@ -70,7 +73,7 @@ sz         : NTuple, PDE grid size, e.g., `(n,m)`
 
 For other options, see `MultigridMethod`.
 """
-V_cycle(A::AbstractMatrix, sz::NTuple; kwargs...) = MultigridMethod(A,sz,V(); kwargs...)
+V_cycle(A::Union{AbstractMatrix,Function}, sz::NTuple; kwargs...) = MultigridMethod(A,sz,V(); kwargs...)
 
 """
     W_cycle(A, sz)
@@ -85,7 +88,7 @@ sz         : NTuple, PDE grid size, e.g., `(n,m)`
 
 For other options, see `MultigridMethod`.
 """
-W_cycle(A::AbstractMatrix, sz::NTuple; kwargs...) = MultigridMethod(A,sz,W(); kwargs...)
+W_cycle(A::Union{AbstractMatrix,Function}, sz::NTuple; kwargs...) = MultigridMethod(A,sz,W(); kwargs...)
 
 """
 F_cycle(A, sz)
@@ -100,7 +103,7 @@ sz         : NTuple, PDE grid size, e.g., `(n,m)`
 
 For other options, see `MultigridMethod`.
 """
-F_cycle(A::AbstractMatrix, sz::NTuple; kwargs...) = MultigridMethod(A,sz,F(); max_iter=1, kwargs...)
+F_cycle(A::Union{AbstractMatrix,Function}, sz::NTuple; kwargs...) = MultigridMethod(A,sz,F(); max_iter=1, kwargs...)
 
 # solver
 """

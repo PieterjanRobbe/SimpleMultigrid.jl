@@ -1,9 +1,9 @@
 # test_utils.jl : utilities for testing SimpleMultigrid
 
 # log resnorm
-function log(mg)
+function log(mg,d)
     println(string("+","-"^30,"+"))
-    println(string("|"," "^11,@sprintf("n = %4i",sqrt(size(mg.grids[1].A,1))+1)," "^11,"|"))
+	println(string("|"," "^11,@sprintf("n = %4i",(size(mg.grids[1].A,1))^(1/d)+1)," "^11,"|"))
     println(string("+","-"^9,"+","-"^20,"+"))
     println(string("| V-cycle |  |rʰ|"," "^7,"ratio","  |"))
     println(string("+","-"^9,"+","-"^20,"+"))

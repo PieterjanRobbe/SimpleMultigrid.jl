@@ -64,7 +64,7 @@ function stencil2mat(stencil::SArray,n::Int...)
     Is = Int64[]
     Js = Int64[]
     Vs = Float64[]
-    for I in R
+    @inbounds for I in R
         is,js,vs = _stencil2mat(stencil,I,I1,Iend)
         push!(Is,is...)
         push!(Js,js...)
@@ -74,12 +74,12 @@ function stencil2mat(stencil::SArray,n::Int...)
 end
 
 # main driver code - constant stencil
-function _stencil2mat(stencil::SArray,I,I1,Iend)
+@noinline function _stencil2mat(stencil::SArray,I,I1,Iend)
     R = CartesianRange(max(I1, I-I1), min(Iend, I+I1))
     Is = fill(0,length(R))
     Js = fill(0,length(R))
     Vs = fill(0.,length(R))
-    for (i,J) in enumerate(R)
+    @inbounds for (i,J) in enumerate(R)
         idx = J-I+2I1
         Is[i] = sub2ind(Iend.I,I.I...)
         Js[i] = sub2ind(Iend.I,J.I...)
