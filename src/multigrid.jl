@@ -28,6 +28,7 @@ struct MultigridIterable{C<:MultigridCycle,Gs,S,V}
     max_iter::Int
     cycle_type::C
     smoother::S
+    damping::Float64
     resnorm::V
 end
 
@@ -54,11 +55,12 @@ Options
 =======
 * max_iter : maximum number of iterations. Default value is `20` For FMG using the `F()`-cycle, this is set to 1.
 * R_op     : restriction operator type, can be `Injection()` or `FullWeighting()` (default) 
-* P_op     : interpolation operator type, can be `Injection()`, `FullWeighting()` (default), or `Cubic()` 
+* P_op     : interpolation operator type, can be `FullWeighting()` (default), or `Cubic()` 
 * ngrids   : total number of grids to use, default is `min.(⌊log₂(sz)⌋)`
 * smoother : smoother, can be `GaussSeidel()` of `Jacobi()`
+* damping  : Multigrid damping factor, ∈ (0,1], can improve convergence in some cases
 """
-MultigridMethod(A::Union{AbstractMatrix,Function}, sz::NTuple, cycle_type::MultigridCycle; max_iter::Int=20, R_op::TransferKind=FullWeighting(), P_op::TransferKind=FullWeighting(), ngrids::Int=minimum(factor_twos.(sz)), smoother::Smoother=GaussSeidel()) = MultigridIterable(coarsen(A,sz,R_op,P_op,ngrids),max_iter,cycle_type,smoother,Float64[])
+MultigridMethod(A::Union{AbstractMatrix,Function}, sz::NTuple, cycle_type::MultigridCycle; max_iter::Int=20, R_op::TransferKind=FullWeighting(), P_op::TransferKind=FullWeighting(), ngrids::Int=minimum(factor_twos.(sz)), smoother::Smoother=GaussSeidel(), damping::Float64=1.) = MultigridIterable(coarsen(A,sz,R_op,P_op,ngrids),max_iter,cycle_type,smoother,damping,Float64[])
 
 """
     V_cycle(A, sz)
@@ -141,32 +143,32 @@ function next(mg::MultigridIterable, it::Int)
 end
 
 # multigrid cycles
-cycle!(mg::MultigridIterable{C} where {C<:V}) = μ_cycle!(mg.grids,1,mg.cycle_type.ν₁,mg.cycle_type.ν₂,1,mg.smoother)
-cycle!(mg::MultigridIterable{C} where {C<:W}) = μ_cycle!(mg.grids,2,mg.cycle_type.ν₁,mg.cycle_type.ν₂,1,mg.smoother)
-cycle!(mg::MultigridIterable{C} where {C<:F}) = F_cycle!(mg.grids,mg.cycle_type.ν₀,mg.cycle_type.ν₁,mg.cycle_type.ν₂,1,mg.smoother)
+cycle!(mg::MultigridIterable{C} where {C<:V}) = μ_cycle!(mg.grids,1,mg.cycle_type.ν₁,mg.cycle_type.ν₂,1,mg.smoother,mg.damping)
+cycle!(mg::MultigridIterable{C} where {C<:W}) = μ_cycle!(mg.grids,2,mg.cycle_type.ν₁,mg.cycle_type.ν₂,1,mg.smoother,mg.damping)
+cycle!(mg::MultigridIterable{C} where {C<:F}) = F_cycle!(mg.grids,mg.cycle_type.ν₀,mg.cycle_type.ν₁,mg.cycle_type.ν₂,1,mg.smoother,mg.damping)
 
-function μ_cycle!(grids::Vector{G} where {G<:Grid}, μ::Int, ν₁::Int, ν₂::Int, grid_ptr::Int, smoother::Smoother)
+function μ_cycle!(grids::Vector{G} where {G<:Grid}, μ::Int, ν₁::Int, ν₂::Int, grid_ptr::Int, smoother::Smoother, damping::Float64)
     smooth!(grids[grid_ptr],ν₁,smoother)
     if grid_ptr == length(grids)
         grids[grid_ptr].x .= grids[grid_ptr].A\grids[grid_ptr].b # exact solve
     else
         grids[grid_ptr+1].b .= grids[grid_ptr].R*residu(grids[grid_ptr])
         grids[grid_ptr+1].x .= zeros(grids[grid_ptr+1].x)
-        μ_cycle!(grids,μ,ν₁,ν₂,grid_ptr+1,smoother)
-        grids[grid_ptr].x .+= grids[grid_ptr+1].P*grids[grid_ptr+1].x
+        μ_cycle!(grids,μ,ν₁,ν₂,grid_ptr+1,smoother,damping)
+        grids[grid_ptr].x .+= damping*grids[grid_ptr+1].P*grids[grid_ptr+1].x
     end
     smooth!(grids[grid_ptr],ν₂,smoother)
 end
 
-function F_cycle!(grids::Vector{G} where {G<:Grid}, ν₀::Int, ν₁::Int, ν₂::Int, grid_ptr::Int, smoother::Smoother)
+function F_cycle!(grids::Vector{G} where {G<:Grid}, ν₀::Int, ν₁::Int, ν₂::Int, grid_ptr::Int, smoother::Smoother, damping::Float64)
     if grid_ptr == length(grids)
         grids[grid_ptr].x .= zeros(grids[grid_ptr].x)
     else
         grids[grid_ptr+1].b .= grids[grid_ptr].R*grids[grid_ptr].b
-        F_cycle!(grids,ν₀,ν₁,ν₂,grid_ptr+1,smoother)
+        F_cycle!(grids,ν₀,ν₁,ν₂,grid_ptr+1,smoother,damping)
         grids[grid_ptr].x .= P(Cubic(),grids[grid_ptr+1].sz...)*grids[grid_ptr+1].x # FMG with cubic interpolation
     end
     for i in 1:ν₀
-        μ_cycle!(grids,1,ν₁,ν₂,grid_ptr,smoother)
+        μ_cycle!(grids,1,ν₁,ν₂,grid_ptr,smoother,damping)
     end
 end
