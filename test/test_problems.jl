@@ -8,9 +8,9 @@ g(x) = Float64[1 + sin(π*xᵢ) for xᵢ in x]
 g(x,y) = Float64[1 + sin(π*xᵢ)*sin(π*yᵢ) for xᵢ in x, yᵢ in y]
 g(x,y,z) = Float64[1 + sin(π*xᵢ)*sin(π*yᵢ)*sin(π*zᵢ) for xᵢ in x, yᵢ in y, zᵢ in z]
 
-f(n) = g(linspace(0,1,n))
-f(n,m) = g(linspace(0,1,n),linspace(0,1,m))
-f(n,m,l) = g(linspace(0,1,n),linspace(0,1,m),linspace(0,1,l))
+f(n) = g(range(0, stop=1, length=n))
+f(n,m) = g(range(0, stop=1, length=n),range(0, stop=1, length=m))
+f(n,m,l) = g(range(0, stop=1, length=n),range(0, stop=1, length=m),range(0, stop=1, length=l))
 
 p₁₁(n) = laplace1d(n)
 p₁₂(n) = laplace2d(n,n)

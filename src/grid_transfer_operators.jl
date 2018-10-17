@@ -53,7 +53,7 @@ prolongate(u,op) = interpolate(u,op)
 # expand
 function expand(op::GridTransferOperator{K,O} where {K,O},n)
     st = stencil(op)
-    R = CartesianRange((n-1,))
+    R = CartesianIndices((n-1,))
     I1, Iend = first(R), last(R)
     Is = Int64[]
     Js = Int64[]

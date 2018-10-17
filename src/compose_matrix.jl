@@ -59,7 +59,7 @@ end
 
 # construction for constant stencil problems
 function stencil2mat(stencil::SArray,n::Int...)
-    R = CartesianRange(n.-1)
+    R = CartesianIndices(n.-1)
     I1, Iend = first(R), last(R)
     Is = Int64[]
     Js = Int64[]
@@ -90,7 +90,7 @@ end
 
 # main driver code for length 7 constant 1d stencils (used in `Cubic()` interpolation)
 function _stencil2mat(stencil::SVector{7},I,I1,Iend)
-    R = CartesianRange(max(I1, I-3I1), min(Iend, I+3I1))
+    R = CartesianIndices(max(I1, I-3I1), min(Iend, I+3I1))
     Is = fill(0,length(R))
     Js = fill(0,length(R))
     Vs = fill(0.,length(R))
@@ -111,7 +111,7 @@ end
 # construction for non-constant stencil problems
 function stencil2mat(stencil::SArray,k::AbstractArray)
     n = size(k).-2
-    R = CartesianRange(n)
+    R = CartesianIndices(n)
     I1, Iend = first(R), last(R)
     Is = Int64[]
     Js = Int64[]
@@ -127,7 +127,7 @@ end
 
 # main driver code - non-constant stencil
 function _stencil2mat(k::AbstractArray,stencil::SArray,I,I1,Iend)
-    R = CartesianRange(max(I1, I-I1), min(Iend, I+I1))
+    R = CartesianIndices(max(I1, I-I1), min(Iend, I+I1))
     Is = fill(0,length(R))
     Js = fill(0,length(R))
     Vs = fill(0.,length(R))
