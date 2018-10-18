@@ -60,7 +60,7 @@ end
 # construction for constant stencil problems
 function stencil2mat(stencil::SArray,n::Int...)
     R = CartesianIndices(n.-1)
-    I1, Iend = first(R), last(R)
+    I1, Iend = extrema(R)
     Is = Int64[]
     Js = Int64[]
     Vs = Float64[]
@@ -75,14 +75,15 @@ end
 
 # main driver code - constant stencil
 @noinline function _stencil2mat(stencil::SArray,I,I1,Iend)
-    R = CartesianRange(max(I1, I-I1), min(Iend, I+I1))
+    R = CartesianIndices(UnitRange.(max(I1, I-I1).I, min(Iend, I+I1).I)) # TODO: #29440 replaces UnitRange with : (colon), see https://discourse.julialang.org/t/psa-replacement-of-ind2sub-sub2ind-in-julia-0-7/14666/9 [repeats 3 times]
     Is = fill(0,length(R))
     Js = fill(0,length(R))
     Vs = fill(0.,length(R))
+    sz = LinearIndices(Iend.I)
     @inbounds for (i,J) in enumerate(R)
         idx = J-I+2I1
-        Is[i] = sub2ind(Iend.I,I.I...)
-        Js[i] = sub2ind(Iend.I,J.I...)
+        Is[i] = sz[I]
+        Js[i] = sz[J]
         Vs[i] = stencil[idx]
     end
     Is,Js,Vs
@@ -90,20 +91,21 @@ end
 
 # main driver code for length 7 constant 1d stencils (used in `Cubic()` interpolation)
 function _stencil2mat(stencil::SVector{7},I,I1,Iend)
-    R = CartesianIndices(max(I1, I-3I1), min(Iend, I+3I1))
+    R = CartesianIndices(UnitRange.(max(I1, I-3I1).I, min(Iend, I+3I1).I))
     Is = fill(0,length(R))
     Js = fill(0,length(R))
     Vs = fill(0.,length(R))
-    for (i,J) in enumerate(R)
+    sz = LinearIndices(Iend.I)
+    @inbounds for (i,J) in enumerate(R)
         idx = J-I+4I1
-        Is[i] = sub2ind(Iend.I,I.I...)
-        Js[i] = sub2ind(Iend.I,J.I...)
+        Is[i] = sz[I]
+        Js[i] = sz[J]
         Vs[i] = stencil[idx]
     end
     if I.I[1] == 2 # correction for boundary
-        Vs[1] .+= 1/16
+        Vs[1] += 1/16
     elseif I.I[1] == Iend.I[1]-1
-        Vs[end] .+= 1/16
+        Vs[end] += 1/16
     end
     Is,Js,Vs
 end
@@ -112,7 +114,7 @@ end
 function stencil2mat(stencil::SArray,k::AbstractArray)
     n = size(k).-2
     R = CartesianIndices(n)
-    I1, Iend = first(R), last(R)
+    I1, Iend = extrema(R)
     Is = Int64[]
     Js = Int64[]
     Vs = Float64[]
@@ -127,14 +129,15 @@ end
 
 # main driver code - non-constant stencil
 function _stencil2mat(k::AbstractArray,stencil::SArray,I,I1,Iend)
-    R = CartesianIndices(max(I1, I-I1), min(Iend, I+I1))
+    R = CartesianIndices(UnitRange.(max(I1, I-I1).I, min(Iend, I+I1).I))
     Is = fill(0,length(R))
     Js = fill(0,length(R))
     Vs = fill(0.,length(R))
+    sz = LinearIndices(Iend.I)
     for (i,J) in enumerate(R)
         idx = J-I+2I1
-        Is[i] = sub2ind(Iend.I,I.I...)
-        Js[i] = sub2ind(Iend.I,J.I...)
+        Is[i] = sz[I]
+        Js[i] = sz[J]
         Vs[i] = k[J+I1]*stencil[idx]
     end
     Is,Js,Vs

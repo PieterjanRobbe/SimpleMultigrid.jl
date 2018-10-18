@@ -15,7 +15,7 @@ function log(mg,d)
 end
 
 # plot 
-@require PyPlot begin
+@require PyPlot="d330b81b-6aea-500a-939a-2ce795aea3ee" begin
     function mplot(x...)
         n = maximum(length.(x))+1
         figure(figsize=(5,5))

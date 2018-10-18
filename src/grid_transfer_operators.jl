@@ -11,6 +11,8 @@ struct HalfWeighting <: TransferKind end
 
 struct Cubic <: TransferKind end
 
+Base.broadcastable(kind::TransferKind) = Ref(kind)
+
 # TransferOperator
 abstract type TransferOperator end
 
@@ -54,11 +56,11 @@ prolongate(u,op) = interpolate(u,op)
 function expand(op::GridTransferOperator{K,O} where {K,O},n)
     st = stencil(op)
     R = CartesianIndices((n-1,))
-    I1, Iend = first(R), last(R)
+    I1, Iend = extrema(R)
     Is = Int64[]
     Js = Int64[]
     Vs = Float64[]
-    for I in R
+    @inbounds for I in R
         if iseven(I.I[1])
             is,js,vs = _stencil2mat(st,I,I1,Iend)
             push!(Is,is.>>1...)

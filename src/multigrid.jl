@@ -119,27 +119,24 @@ M : MultigridIterable
 b : right-hand side
 """
 function \(mg::MultigridIterable, b::AbstractVector)
-    length(b) == length(mg.grids[1].b) || throw(DimensionMismatch("Right-hand side b has length $(length(b)), but needs $(length(mg.grids[1].b))")) # check dimensions
+    length(b) == length(mg.grids[1].b) || throw(DimensionMismatch(string("Right-hand side b has length ", length(b), " but needs ", length(mg.grids[1].b)))) # check dimensions
     mg.grids[1].b .= b # copy rhs
-    push!(mg.resnorm,norm_of_residu(mg.grids[1])) # log convergence history
+    ϵ = 1/prod(mg.grids[1].sz)
 
-    for item in Base.Iterators.take(mg,mg.max_iter) end # iterate
+    for (i,iter) in enumerate(Iterators.take(mg,mg.max_iter+1))
+        mg.resnorm[end] < ϵ && break
+    end
 
-    mg.resnorm[end] >= 1/prod(mg.grids[1].sz) && warn(@sprintf("maximum number of iterations reached, norm of residual is %6.3e > %6.3e",mg.resnorm[end],1/prod(mg.grids[1].sz))) # check convergence with max_iter iterations
+    mg.resnorm[end] ≥ ϵ && @warn @sprintf("maximum number of iterations reached, norm of residual is %6.3e > %6.3e", mg.resnorm[end], ϵ) # check convergence with max_iter iterations
 
     return mg.grids[1].x
 end
 
 # iterator commands
-start(mg::MultigridIterable) = 1
-
-done(mg::MultigridIterable, it::Int) = mg.resnorm[end] < 1/prod(mg.grids[1].sz) # target norm of residu is O(h²)
-
-function next(mg::MultigridIterable, it::Int)
-    cycle!(mg)
-    push!(mg.resnorm,norm_of_residu(mg.grids[1])) # log convergence history
-
-    nothing, it+1
+function iterate(iter::MultigridIterable, count=0)
+    count > 0 && cycle!(iter)
+    push!(iter.resnorm, norm_of_residu(iter.grids[1])) # log convergence history
+    nothing, count+1
 end
 
 # multigrid cycles
@@ -153,7 +150,7 @@ function μ_cycle!(grids::Vector{G} where {G<:Grid}, μ::Int, ν₁::Int, ν₂:
         grids[grid_ptr].x .= grids[grid_ptr].A\grids[grid_ptr].b # exact solve
     else
         grids[grid_ptr+1].b .= grids[grid_ptr].R*residu(grids[grid_ptr])
-        grids[grid_ptr+1].x .= zeros(grids[grid_ptr+1].x)
+        grids[grid_ptr+1].x .= zero(grids[grid_ptr+1].x)
         μ_cycle!(grids,μ,ν₁,ν₂,grid_ptr+1,smoother,damping)
         grids[grid_ptr].x .+= damping*grids[grid_ptr+1].P*grids[grid_ptr+1].x
     end
@@ -162,7 +159,7 @@ end
 
 function F_cycle!(grids::Vector{G} where {G<:Grid}, ν₀::Int, ν₁::Int, ν₂::Int, grid_ptr::Int, smoother::Smoother, damping::Float64)
     if grid_ptr == length(grids)
-        grids[grid_ptr].x .= zeros(grids[grid_ptr].x)
+        fill!(grids[grid_ptr].x,0)
     else
         grids[grid_ptr+1].b .= grids[grid_ptr].R*grids[grid_ptr].b
         F_cycle!(grids,ν₀,ν₁,ν₂,grid_ptr+1,smoother,damping)

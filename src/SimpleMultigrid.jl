@@ -1,7 +1,7 @@
 module SimpleMultigrid
 
 # dependencies
-using IterativeSolvers, StaticArrays
+using IterativeSolvers, StaticArrays, SparseArrays, Printf
 
 # export statements
 export laplace1d, laplace2d, laplace3d, elliptic1d, elliptic2d, elliptic3d
@@ -11,7 +11,7 @@ export coarsen
 export MultigridMethod, V, W, F, V_cycle, W_cycle, F_cycle, \
 
 # import statements
-import Base: expand, show, start, next, done, \
+import Base: expand, show, iterate, \
 
 # include source files
 include("compose_matrix.jl")

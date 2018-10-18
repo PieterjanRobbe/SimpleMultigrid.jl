@@ -1,4 +1,4 @@
-using SimpleMultigrid, Test, Requires
+using SimpleMultigrid, Test, Requires, Printf
 
 include("test_utils.jl")
 include("test_problems.jl")
