@@ -11,7 +11,6 @@ end
     for n in [16 32 64 128 256 512 1024]
         (A, b) = get_problem_2d(n)
         A.grids[1].b .= b # copy rhs
-        push!(A.resnorm,SimpleMultigrid.norm_of_residu(A.grids[1])) # log convergence history
         for item in Base.Iterators.take(A,15) end # iterate
         @test A.resnorm[end] < 1/n^2
         log(A,2)
@@ -28,7 +27,6 @@ end
     for n in [4 8 16 32 64 128]
         (A, b) = get_problem_3d(n)
         A.grids[1].b .= b # copy rhs
-        push!(A.resnorm,SimpleMultigrid.norm_of_residu(A.grids[1])) # log convergence history
         for item in Base.Iterators.take(A,15) end # iterate
         @test A.resnorm[end] < 1/n^3
         log(A,3)
