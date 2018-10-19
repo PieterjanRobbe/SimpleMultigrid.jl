@@ -123,7 +123,7 @@ function \(mg::MultigridIterable, b::AbstractVector)
     mg.grids[1].b .= b # copy rhs
     ϵ = 1/prod(mg.grids[1].sz)
 
-    for (i,iter) in enumerate(Iterators.take(mg,mg.max_iter+1))
+    for (i,iter) in enumerate(Iterators.take(mg,mg.max_iter))
         mg.resnorm[end] < ϵ && break
     end
 
@@ -134,7 +134,8 @@ end
 
 # iterator commands
 function iterate(iter::MultigridIterable, count=0)
-    count > 0 && cycle!(iter)
+    count == 0 && push!(iter.resnorm, norm_of_residu(iter.grids[1])) 
+    cycle!(iter)
     push!(iter.resnorm, norm_of_residu(iter.grids[1])) # log convergence history
     nothing, count+1
 end
