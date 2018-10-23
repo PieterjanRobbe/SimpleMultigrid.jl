@@ -6,7 +6,7 @@ Simple implementation of geometric multigrid methods.
 ## Installation
 
 ```julia
-Pkg.clone("https://github.com/PieterjanRobbe/SimpleMultigrid.jl")
+] add https://github.com/PieterjanRobbe/SimpleMultigrid.jl
 ```
 
 Load the package in Julia by
