@@ -8,10 +8,10 @@ export laplace1d, laplace2d, laplace3d, elliptic1d, elliptic2d, elliptic3d
 export Injection, FullWeighting, Cubic
 export GaussSeidel, Jacobi, SOR
 export coarsen
-export MultigridMethod, V, W, F, V_cycle, W_cycle, F_cycle, \
+export MultigridMethod, V, W, F, V_cycle, W_cycle, F_cycle, \, size
 
 # import statements
-import Base: expand, show, iterate, \
+import Base: expand, show, iterate, \, size
 
 # include source files
 include("compose_matrix.jl")

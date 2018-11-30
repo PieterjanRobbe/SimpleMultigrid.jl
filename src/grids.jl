@@ -10,6 +10,8 @@ struct Grid{matT<:SparseMatrixCSC,vecT<:AbstractVector,opeT,tupT<:NTuple}
     sz::tupT # PDE grid size
 end
 
+size(grid::Grid) = grid.sz
+
 show(io::IO, grid::Grid) = print(io, string(join(grid.sz," x ")," grid"))
 
 # coarsen the problem A into a sequence of coarser grids
