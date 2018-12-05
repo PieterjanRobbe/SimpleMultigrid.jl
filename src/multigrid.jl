@@ -160,7 +160,7 @@ end
 function coarse_grid_correction!(grids, grid_ptr, c)
 	d = residu(grids[grid_ptr])
 	α = c'*d/(c'*grids[grid_ptr].A*c)
-	α = isnan(α) ? one(eltype(c)) : α
+	α = isnan(α) ? one(eltype(c)) : min(1.1, max(0.7, α))
 	grids[grid_ptr].x .+= α * c
 end
 
