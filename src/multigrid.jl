@@ -58,7 +58,7 @@ Options
 * ngrids   : total number of grids to use, default is `min.(⌊log₂(sz)⌋)`
 * smoother : smoother, can be `GaussSeidel()` of `Jacobi()`
 """
-MultigridMethod(A::Union{AbstractMatrix,Function}, sz::NTuple, cycle_type::MultigridCycle; max_iter::Int=20, R_op::TransferKind=FullWeighting(), P_op::TransferKind=FullWeighting(), ngrids::Int=minimum(factor_twos.(sz)), smoother::Smoother=GaussSeidel()) = MultigridIterable(coarsen(A, sz, R_op, P_op, ngrids), max_iter, cycle_type, smoother, Float64[])
+MultigridMethod(A::Union{AbstractMatrix,Function}, sz::NTuple, cycle_type::MultigridCycle; max_iter::Int=20, R_op::TransferKind=FullWeighting(), P_op::TransferKind=FullWeighting(), ngrids::Int=minimum(factor_twos.(sz)), smoother::Smoother=GaussSeidel()) = MultigridIterable(coarsen(A, sz, R_op, P_op, ngrids), max_iter, cycle_type, smoother, Vector{Float64}(undef, 0))
 
 """
     V_cycle(A, sz)
