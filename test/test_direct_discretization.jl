@@ -2,7 +2,7 @@
 
 # direct discretization for elliptic problem in 2D/3D
 function get_problem_2d(n)
-    A = MultigridMethod((n,m) -> p₂₂(n), (n, n), V(3, 2), damping=0.95)
+    A = MultigridMethod((n,m) -> p₂₂(n), (n, n), V(3, 2))
     b = fill(1,(n-1)*(n-1))
     return (A,b)
 end
@@ -18,7 +18,7 @@ end
 end
 
 function get_problem_3d(n)
-    A = MultigridMethod((n,m,k) -> p₂₃(n), (n, n, n), V(3, 2), damping=0.95)
+    A = MultigridMethod((n,m,k) -> p₂₃(n), (n, n, n), V(3, 2))
     b = fill(1,(n-1)*(n-1)*(n-1))
     return (A,b)
 end
