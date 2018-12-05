@@ -151,9 +151,17 @@ function μ_cycle!(grids::Vector{G} where {G<:Grid}, μ::Int, ν₁::Int, ν₂:
         grids[grid_ptr+1].b .= grids[grid_ptr].R * residu(grids[grid_ptr])
         grids[grid_ptr+1].x .= zero(grids[grid_ptr+1].x)
         μ_cycle!(grids, μ, ν₁, ν₂, grid_ptr+1, smoother)
-		grids[grid_ptr].x .+= damping(grids, grid_ptr) * grids[grid_ptr+1].P * grids[grid_ptr+1].x
+		coarse_grid_correction!(grids, grid_ptr, grids[grid_ptr+1].P * grids[grid_ptr+1].x)
     end
     smooth!(grids[grid_ptr], ν₂, smoother)
+end
+
+# damping factor chosen to minimize energy norm
+function coarse_grid_correction!(grids, grid_ptr, c)
+	d = residu(grids[grid_ptr])
+	α = c'*d/(c'*grids[grid_ptr].A*c)
+	α = isnan(α) ? one(eltype(c)) : α
+	grids[grid_ptr].x .+= α * c
 end
 
 function F_cycle!(grids::Vector{G} where {G<:Grid}, ν₀::Int, ν₁::Int, ν₂::Int, grid_ptr::Int, smoother::Smoother)
@@ -167,12 +175,4 @@ function F_cycle!(grids::Vector{G} where {G<:Grid}, ν₀::Int, ν₁::Int, ν�
     for i in 1:ν₀
         μ_cycle!(grids, 1, ν₁, ν₂, grid_ptr, smoother)
     end
-end
-
-# damping factor chosen to minimize energy norm
-function damping(grids, grid_ptr)
-	c = grids[grid_ptr+1].P*grids[grid_ptr+1].x
-	d = residu(grids[grid_ptr])
-	α = c'*d/(c'*grids[grid_ptr].A*c)
-	isnan(α) ? 1.0 : α
 end
