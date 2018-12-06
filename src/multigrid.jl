@@ -150,7 +150,9 @@ function μ_cycle!(grids::Vector{G} where {G<:Grid}, μ::Int, ν₁::Int, ν₂:
     else
         grids[grid_ptr+1].b .= grids[grid_ptr].R * residu(grids[grid_ptr])
         grids[grid_ptr+1].x .= zero(grids[grid_ptr+1].x)
-        μ_cycle!(grids, μ, ν₁, ν₂, grid_ptr+1, smoother)
+		for i in 1:μ
+        	μ_cycle!(grids, μ, ν₁, ν₂, grid_ptr+1, smoother)
+		end
 		coarse_grid_correction!(grids, grid_ptr, grids[grid_ptr+1].P * grids[grid_ptr+1].x)
     end
     smooth!(grids[grid_ptr], ν₂, smoother)
