@@ -36,10 +36,10 @@ show(io::IO, mg::MultigridIterable) = print(io, print_grid_sizes(mg.grids), "-gr
 print_grid_sizes(grids::Array{<:Grid}) = join(size(grids), "x")
 
 """
-    MultigridMethod(A, sz, cycle_type)
-    MultigridMethod(A, sz, cycle_type; kwargs...)
-    MultigridMethod(f, sz, cycle_type)
-    MultigridMethod(f, sz, cycle_type; kwargs...)
+MultigridMethod(A, sz, cycle_type)
+MultigridMethod(A, sz, cycle_type; kwargs...)
+MultigridMethod(f, sz, cycle_type)
+MultigridMethod(f, sz, cycle_type; kwargs...)
 
 Geometric Multigrid method of type `cycle_type` for matrix `A`, that results from a discretization of a PDE on [0,1]^d using an `sz`-point mesh. A Galerkin approach is used to compose the coarse matrices, unless a function `f` is provided for direct discretization.
 
@@ -61,8 +61,8 @@ Options
 MultigridMethod(A::Union{AbstractMatrix,Function}, sz::NTuple, cycle_type::MultigridCycle; max_iter::Int=20, R_op::TransferKind=FullWeighting(), P_op::TransferKind=FullWeighting(), ngrids::Int=minimum(factor_twos.(sz)), smoother::Smoother=GaussSeidel()) = MultigridIterable(coarsen(A, sz, R_op, P_op, ngrids), max_iter, cycle_type, smoother, Vector{Float64}(undef, 0))
 
 """
-    V_cycle(A, sz)
-    V_cycle(A, sz; kwargs...)
+V_cycle(A, sz)
+V_cycle(A, sz; kwargs...)
 
 Geometric Multigrid V(2,1)-cycle for matrix `A`, that results from a discretization of a PDE on [0,1]^d using an `sz`-point mesh.
 
@@ -76,8 +76,8 @@ For other options, see `MultigridMethod`.
 V_cycle(A::Union{AbstractMatrix,Function}, sz::NTuple; kwargs...) = MultigridMethod(A ,sz, V(); kwargs...)
 
 """
-    W_cycle(A, sz)
-    W_cycle(A, sz; kwargs...)
+W_cycle(A, sz)
+W_cycle(A, sz; kwargs...)
 
 Geometric Multigrid W(2,1)-cycle for matrix `A`, that results from a discretization of a PDE on [0,1]^d using an `sz`-point mesh.
 
@@ -107,7 +107,7 @@ F_cycle(A::Union{AbstractMatrix,Function}, sz::NTuple; kwargs...) = MultigridMet
 
 # solver
 """
-    \\(M,b)
+\\(M,b)
 
 Solve the matrix problem `Mx=b` using Multigrid.
 
@@ -150,25 +150,25 @@ function μ_cycle!(grids::Vector{G} where {G<:Grid}, μ::Int, ν₁::Int, ν₂:
     else
         grids[grid_ptr+1].b .= grids[grid_ptr].R * residu(grids[grid_ptr])
         grids[grid_ptr+1].x .= zero(grids[grid_ptr+1].x)
-		for i in 1:μ
-        	μ_cycle!(grids, μ, ν₁, ν₂, grid_ptr+1, smoother)
-		end
-		coarse_grid_correction!(grids, grid_ptr, grids[grid_ptr+1].P * grids[grid_ptr+1].x)
+        for i in 1:μ
+            μ_cycle!(grids, μ, ν₁, ν₂, grid_ptr+1, smoother)
+        end
+        coarse_grid_correction!(grids, grid_ptr, grids[grid_ptr+1].P * grids[grid_ptr+1].x)
     end
     smooth!(grids[grid_ptr], ν₂, smoother)
 end
 
 # damping factor chosen to minimize energy norm
 function coarse_grid_correction!(grids, grid_ptr, c)
-	d = residu(grids[grid_ptr])
-	α = c'*d/(c'*grids[grid_ptr].A*c)
-	α = isnan(α) ? one(eltype(c)) : min(1.1, max(0.7, α))
-	grids[grid_ptr].x .+= α * c
+    d = residu(grids[grid_ptr])
+    α = c'*d/(c'*grids[grid_ptr].A*c)
+    α = isnan(α) ? one(eltype(c)) : min(1.1, max(0.7, α))
+    grids[grid_ptr].x .+= α * c
 end
 
 function F_cycle!(grids::Vector{G} where {G<:Grid}, ν₀::Int, ν₁::Int, ν₂::Int, grid_ptr::Int, smoother::Smoother)
     if grid_ptr == length(grids)
-		grids[grid_ptr].x .= zero(grids[grid_ptr].x)
+        grids[grid_ptr].x .= zero(grids[grid_ptr].x)
     else
         grids[grid_ptr+1].b .= grids[grid_ptr].R * grids[grid_ptr].b
         F_cycle!(grids, ν₀, ν₁, ν₂, grid_ptr+1, smoother)

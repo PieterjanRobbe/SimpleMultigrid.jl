@@ -10,7 +10,10 @@ struct Grid{matT<:SparseMatrixCSC,vecT<:AbstractVector,opeT,tupT<:NTuple}
     sz::tupT # PDE grid size
 end
 
+ndims(grid::Grid) = length(size(grid))
+
 size(grid::Grid) = grid.sz
+size(grid::Grid, n::Integer) = grid.sz[n]
 
 show(io::IO, grid::Grid) = print(io, string(join(grid.sz," x ")," grid"))
 
@@ -69,4 +72,20 @@ h_norm(v::AbstractVector,sz) = 1.0/prod(sz) * sqrt(sum(v.*v))
 norm_of_residu(grid::Grid) = h_norm(residu(grid),grid.sz)
 
 # apply smoother
-smooth!(grid::Grid,ν::Int,smoother::Smoother) = smooth!(grid.x,grid.A,grid.b,ν,smoother)
+smooth!(grid::Grid, ν::Int, smoother::Smoother) = smooth!(grid.x, grid.A, grid.b, ν, smoother)
+
+# apply line smoother
+function smooth!(grid::Grid, ν::Int, smoother::LineSmoother)
+    R = CartesianIndices(size(grid))
+    L = LinearIndices(R)
+    for dir in 1:ndims(grid)
+        for νᵢ in 1:ν
+            for i in 1:size(grid, dir)
+                idcs = selectdim(R, dir, i)
+                smooth!(view(grid.x, L[idcs]), view(grid.A, L[idcs], L[idcs]), view(grid.b, L[idcs]), 1, smoother.smoother)
+            end
+        end
+    end
+end
+
+

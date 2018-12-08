@@ -1,4 +1,4 @@
-# iterative_methods.jl : convenience wrappers for smmothers in the IterativeSolvers package
+# iterative_methods.jl : convenience wrappers for smoothers in the IterativeSolvers package
 
 abstract type Smoother end
 
@@ -6,6 +6,12 @@ struct Jacobi <: Smoother end
 
 struct GaussSeidel <: Smoother end
 
-smooth!(x::AbstractVector,A::SparseMatrixCSC,b::AbstractVector,n::Int,::Jacobi) = jacobi!(x,A,b,maxiter=n)
+struct LineSmoother{S<:Smoother} <: Smoother
+    smoother::S
+end
 
-smooth!(x::AbstractVector,A::SparseMatrixCSC,b::AbstractVector,n::Int,::GaussSeidel) = gauss_seidel!(x,A,b,maxiter=n)
+LineSmoother(smoother::Smoother) = smoother isa LineSmoother ? throw(ArgumentError("cannot create a LineSmoother for another LineSmoother!")) : LineSmoother(smoother)
+
+smooth!(x::AbstractVector, A::AbstractSparseMatrix, b::AbstractVector, n::Int, ::Jacobi) = jacobi!(x,A,b,maxiter=n)
+
+smooth!(x::AbstractVector, A::AbstractSparseMatrix, b::AbstractVector, n::Int, ::GaussSeidel) = gauss_seidel!(x,A,b,maxiter=n)
