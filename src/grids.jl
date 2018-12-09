@@ -1,7 +1,7 @@
 # grids.jl : introduces the Grid type for easy use of multigrid algorithms
 
 # Ax=b
-struct Grid{matT<:SparseMatrixCSC,vecT<:AbstractVector,opeT,tupT<:NTuple}
+struct Grid{matT<:SparseMatrixCSC, vecT<:AbstractVector, opeT, tupT<:NTuple}
     A::matT # matrix A
     x::vecT # solution vector
     b::vecT # rhs vector
@@ -73,19 +73,3 @@ norm_of_residu(grid::Grid) = h_norm(residu(grid),grid.sz)
 
 # apply smoother
 smooth!(grid::Grid, ν::Int, smoother::Smoother) = smooth!(grid.x, grid.A, grid.b, ν, smoother)
-
-# apply line smoother
-function smooth!(grid::Grid, ν::Int, smoother::LineSmoother)
-    R = CartesianIndices(size(grid))
-    L = LinearIndices(R)
-    for dir in 1:ndims(grid)
-        for νᵢ in 1:ν
-            for i in 1:size(grid, dir)
-                idcs = selectdim(R, dir, i)
-                smooth!(view(grid.x, L[idcs]), view(grid.A, L[idcs], L[idcs]), view(grid.b, L[idcs]), 1, smoother.smoother)
-            end
-        end
-    end
-end
-
-
