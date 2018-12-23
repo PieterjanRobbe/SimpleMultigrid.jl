@@ -42,10 +42,10 @@ function coarsen(f::Function, sz::NTuple, R_op::TransferKind, P_op::TransferKind
     grids[1] = Grid(A0,zero_x(A0),zero_x(A0),R(R_op,sz...),spzeros(0,0),sz)
     for i in 2:ngrids
         sz_c = grids[i-1].sz.>>1
-        R_mat = R(R_op,sz_c...)
-        P_mat = P(P_op,sz_c...)
-		A_c = f(sz_c...)
-        grids[i] = Grid(A_c,zero_x(A_c),zero_x(A_c),R_mat,P_mat,sz_c)
+        R_mat = R(R_op, sz_c...)
+        P_mat = P(P_op, sz_c...)
+        A_c = f(sz_c...)
+        grids[i] = Grid(A_c, zero_x(A_c), zero_x(A_c), R_mat, P_mat, sz_c)
     end
     grids
 end
@@ -69,7 +69,18 @@ residu(grid::Grid) = grid.b - grid.A*grid.x
 
 # compute the h-norm of the residu on this level
 h_norm(v::AbstractVector,sz) = 1.0/prod(sz) * sqrt(sum(v.*v))
-norm_of_residu(grid::Grid) = h_norm(residu(grid),grid.sz)
+norm_of_residu(grid::Grid) = h_norm(residu(grid), grid.sz)
 
 # apply smoother
 smooth!(grid::Grid, ν::Int, smoother::Smoother) = smooth!(grid.x, grid.A, grid.b, ν, smoother)
+
+# TODO this should be improved...
+function smooth!(grid::Grid, ν::Int, smoother::RedBlackGaussSeidel)
+    for color in 1:2
+        x_copy = copy(grid.x)
+        smooth!(x_copy, grid.A, grid.b, ν, GaussSeidel())
+        for i in color:2:size(grid.A, 1)
+            grid.x[i] = x_copy[i]
+        end
+    end
+end
