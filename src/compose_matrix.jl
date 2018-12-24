@@ -34,59 +34,24 @@ function elliptic1d(k)
 end
 
 """
-    flowcell(k)
-
-Returns the discretization for an elliptic PDE with flow cell geometry.
-The diffusion coefficient k must given on an equidistant grid with nodes {1,...,n-1} (1d)
-or {1,...,n-1} x {0,..,m} (2d). The step sizes are thus h_x = 1/n and h_y = 1/m.
-
-"""
-function flowcell(k::AbstractVector)
-    n = size(k) + 1
-    A = elliptic1d(k)
-    b = fill(0., size(A, 1))
-    b[1] = k[1]*n^2
-
-    A, b
-end
-
-function flowcell(k::AbstractMatrix)
-    n = size(k, 1) + 1
-    m = size(k, 2) + 2
-    A = _elliptic2d(k, n, m)
-    b = fill(0., size(A, 1))
-    b[1:n-1] .= k[:, 1]*m^2
-
-    R = CartesianIndices(size(k))
-    L = LinearIndices(R)
-    for i in 1:size(k, 2)
-        A[L[1, i], L[2, i]] -= k[1, i]*n^2
-        A[L[end, i], L[end-1, i]] -= k[end, i]*n^2
-    end
-
-    A, b
-end
-
-"""
     elliptic2d(k)
 
 Generate system matrix for general 2d elliptic PDE defined on [0,1]^2.
-The diffusion coefficient k must given on an equidistant grid with nodes {1,...,n-1} x {1,..,m-1}, 
-boundaries included. The step sizes are thus h_x = 1/n and h_y = 1/m.
+The diffusion coefficient k must given on an equidistant grid with nodes {1,...,n-1} x {1,..,m-1}. The step sizes are thus h_x = 1/n and h_y = 1/m.
 """
-elliptic2d(k) = _elliptic2d(k, size(k).+1...)
-
-_elliptic2d(k, n, m) = stencil2mat(SArray{Tuple{3,3}}([0 -m^2 0 -n^2 2(n^2+m^2) -n^2 0 -m^2 0]), k)
+function elliptic2d(k)
+    n, m = size(k) .+ 1
+    stencil2mat(SArray{Tuple{3,3}}([0 -m^2 0 -n^2 2(n^2+m^2) -n^2 0 -m^2 0]), k)
+end
 
 """
     elliptic3d(k)
 
 Generate system matrix for general 3d elliptic PDE defined on [0,1]^3.
-The diffsion coefficient k must given on an equidistant grid with nodes {0,1,...,n}x{0,1,..,m}x{0,1,...,l}, 
-boundaries included. The step sizes are thus h_x = 1/n, h_y = 1/m and h_z = 1/l.
+The diffsion coefficient k must given on an equidistant grid with nodes {1,...,n-1} x {1,..,m-1} x {0,...,l-1}. The step sizes are thus h_x = 1/n, h_y = 1/m and h_z = 1/l.
 """
 function elliptic3d(k)
-    n,m,l = size(k).+1
+    n,m,l = size(k) .+ 1
     stencil2mat(SArray{Tuple{3,3,3}}([0 0 0 0 -l^2 0 0 0 0 0 -m^2 0 -n^2 2(n^2+m^2+l^2) -n^2 0 -m^2 0 0 0 0 0 -l^2 0 0 0 0]), k)
 end
 

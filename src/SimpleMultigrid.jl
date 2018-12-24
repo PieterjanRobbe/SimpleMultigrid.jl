@@ -4,7 +4,7 @@ module SimpleMultigrid
 using IterativeSolvers, StaticArrays, SparseArrays, Printf
 
 # export statements
-export laplace1d, laplace2d, laplace3d, elliptic1d, elliptic2d, elliptic3d, flowcell
+export laplace1d, laplace2d, laplace3d, elliptic1d, elliptic2d, elliptic3d
 export Injection, FullWeighting, Cubic
 export GaussSeidel, Jacobi, RedBlackGaussSeidel
 export coarsen
