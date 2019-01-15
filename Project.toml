@@ -1,6 +1,6 @@
 name = "SimpleMultigrid"
 uuid = "e8fea2e7-436f-5c48-8914-48864cfb6713"
-version = "v1.0.0"
+version = "v1.0.2"
 
 [deps]
 IterativeSolvers = "42fd0dbc-a981-5370-80f2-aaf504508153"
