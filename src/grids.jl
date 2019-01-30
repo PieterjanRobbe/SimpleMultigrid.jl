@@ -54,14 +54,7 @@ end
 # automatically determine number of grids
 # TODO: because of the way the grid transfer operators are implemented
 # we can only do prolongation for grids with an even number of points...
-function factor_twos(n::Int)
-    i = 0
-    while iseven(n) && n > 1
-        n >>= 1
-        i+=1
-    end
-    i
-end
+factor_twos(n::Int) = sum(factor(Vector, n) .== 2)
 
 zero_x(A::SparseMatrixCSC) = zeros(eltype(A),size(A,1)) 
 
