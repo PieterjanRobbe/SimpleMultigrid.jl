@@ -1,7 +1,7 @@
 module SimpleMultigrid
 
 # dependencies
-using IterativeSolvers, StaticArrays, SparseArrays, Printf
+using IterativeSolvers, LinearAlgebra, StaticArrays, SparseArrays, Printf
 
 # export statements
 export laplace1d, laplace2d, laplace3d, elliptic1d, elliptic2d, elliptic3d

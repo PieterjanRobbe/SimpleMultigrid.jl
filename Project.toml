@@ -4,6 +4,7 @@ version = "v1.0.2"
 
 [deps]
 IterativeSolvers = "42fd0dbc-a981-5370-80f2-aaf504508153"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 PaddedViews = "5432bcbf-9aad-5242-b902-cca2824c8663"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 Requires = "ae029012-a4dd-5104-9daa-d747884805df"

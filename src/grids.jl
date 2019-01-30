@@ -13,6 +13,7 @@ end
 ndims(grid::Grid) = length(size(grid))
 
 size(grid::Grid) = grid.sz
+
 size(grid::Grid, n::Integer) = grid.sz[n]
 
 show(io::IO, grid::Grid) = print(io, string(join(grid.sz," x ")," grid"))
@@ -68,7 +69,7 @@ zero_x(A::SparseMatrixCSC) = zeros(eltype(A),size(A,1))
 residu(grid::Grid) = grid.b - grid.A*grid.x
 
 # compute the h-norm of the residu on this level
-h_norm(v::AbstractVector,sz) = 1.0/prod(sz) * sqrt(sum(v.*v))
+h_norm(v::AbstractVector, sz) = 1.0/prod(sz) * norm(v)
 norm_of_residu(grid::Grid) = h_norm(residu(grid), grid.sz)
 
 # apply smoother

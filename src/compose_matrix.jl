@@ -59,8 +59,8 @@ end
 function stencil2mat(stencil::SArray, n::Int...)
     R = CartesianIndices(n.-1)
     I1, Iend = extrema(R)
-    Is = Int64[]
-    Js = Int64[]
+    Is = Int[]
+    Js = Int[]
     Vs = Float64[]
     @inbounds for I in R
         is,js,vs = _stencil2mat(stencil,I,I1,Iend)
@@ -113,8 +113,8 @@ function stencil2mat(stencil::SArray, k::AbstractArray)
     n = size(k)
     R = CartesianIndices(n)
     I1, Iend = extrema(R)
-    Is = Int64[]
-    Js = Int64[]
+    Is = Int[]
+    Js = Int[]
     Vs = Float64[]
     for I in R
         is,js,vs = _stencil2mat(k,stencil,I,I1,Iend)

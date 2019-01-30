@@ -57,8 +57,8 @@ function expand(op::GridTransferOperator{K,O} where {K,O},n)
     st = stencil(op)
     R = CartesianIndices((n-1,))
     I1, Iend = extrema(R)
-    Is = Int64[]
-    Js = Int64[]
+    Is = Int[]
+    Js = Int[]
     Vs = Float64[]
     @inbounds for I in R
         if iseven(I.I[1])

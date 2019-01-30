@@ -36,10 +36,10 @@ show(io::IO, mg::MultigridIterable) = print(io, print_grid_sizes(mg.grids), "-gr
 print_grid_sizes(grids::Array{<:Grid}) = join(size(grids), "x")
 
 """
-MultigridMethod(A, sz, cycle_type)
-MultigridMethod(A, sz, cycle_type; kwargs...)
-MultigridMethod(f, sz, cycle_type)
-MultigridMethod(f, sz, cycle_type; kwargs...)
+    MultigridMethod(A, sz, cycle_type)
+    MultigridMethod(A, sz, cycle_type; kwargs...)
+    MultigridMethod(f, sz, cycle_type)
+    MultigridMethod(f, sz, cycle_type; kwargs...)
 
 Geometric Multigrid method of type `cycle_type` for matrix `A`, that results from a discretization of a PDE on [0,1]^d using an `sz`-point mesh. A Galerkin approach is used to compose the coarse matrices, unless a function `f` is provided for direct discretization.
 

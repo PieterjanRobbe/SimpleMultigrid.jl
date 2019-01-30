@@ -20,7 +20,7 @@ end
         n = maximum(length.(x))+1
         figure(figsize=(5,5))
         for i in 1:length(x)
-            factor = round(Int64,n/(length(x[i])+1))
+            factor = round(Int, n/(length(x[i])+1))
             plot(factor:factor:n-1,x[i],"-o")
         end
     end
@@ -31,8 +31,8 @@ end
         figure(figsize=(5,5))
         alphas = linspace(0.2,1,length(s))
         for i in 1:length(s)
-            nfactor = round(Int64,n/(size(s[i],1)+1))
-            mfactor = round(Int64,m/(size(s[i],2)+1))
+            nfactor = round(Int, n/(size(s[i],1)+1))
+            mfactor = round(Int, m/(size(s[i],2)+1))
             x = nfactor:nfactor:n-1
             y = mfactor:mfactor:m-1
             xgrid = repmat(x,1,length(y))
